@@ -10,14 +10,14 @@ RewriteRule ^(.*)$ index.php?p=$1 [L,QSA]
 
 # Security Headers
 <IfModule mod_headers.c>
+    # Add Content-Security-Policy to mitigate XSS
+    Header always set Content-Security-Policy "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; object-src 'none';"
+
     # Prevent clickjacking
     Header set X-Frame-Options "SAMEORIGIN"
 
     # Prevent MIME type sniffing
     Header set X-Content-Type-Options "nosniff"
-
-    # Enable XSS protection
-    Header set X-XSS-Protection "1; mode=block"
 
     # Referrer policy
     Header set Referrer-Policy "strict-origin-when-cross-origin"

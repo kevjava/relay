@@ -219,8 +219,6 @@
         return response.json();
       })
       .then((data) => {
-        console.log("Returned from the POST.");
-        console.dir(data);
         if (data.success) {
           statusSpan.textContent = "✓ Saved successfully";
           statusSpan.className = "relay-status-success";

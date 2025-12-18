@@ -170,6 +170,18 @@ function content_render_markdown(string $markdown): string {
     $parsedown = new \ParsedownExtra();
 
     // Enable security features
+
+    // ####################################################################
+    // # SECURITY WARNING: POTENTIAL XSS VULNERABILITY
+    // ####################################################################
+    // # setSafeMode is disabled to allow raw HTML in Markdown content.
+    // # This is currently considered a low risk because content files can
+    // # only be edited by trusted users with direct filesystem access.
+    // #
+    // # If a web-based content editor is EVER implemented, this MUST be
+    // # changed to `setSafeMode(true)` to prevent Cross-Site Scripting (XSS)
+    // # attacks from untrusted user input.
+    // ####################################################################
     $parsedown->setSafeMode(false); // Allow HTML in markdown
     $parsedown->setMarkupEscaped(false);
 

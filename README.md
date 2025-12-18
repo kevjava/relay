@@ -7,10 +7,12 @@ Relay is a minimal, secure PHP-based content management system designed for gove
 ## Features
 
 - **Markdown-based content**: Write in simple Markdown with YAML frontmatter
+- **Theme system**: Flexible HTML templates with PHP for custom layouts
 - **No database required**: All data stored in JSON and Markdown files
 - **Secure by default**: CSRF protection, rate limiting, secure password hashing
 - **Multiple navigation menus**: Header, left sidebar, and right sidebar
-- **Simple admin interface**: Easy menu editing with drag-and-drop-like controls
+- **Responsive layouts**: Three-column grid that adapts to content
+- **Simple admin interface**: Easy menu editing with intuitive controls
 - **File-based user management**: CLI tools for user administration
 - **Docker-ready**: Simple Docker setup for development and deployment
 
@@ -95,6 +97,79 @@ This is my content written in **Markdown**.
 - Always include frontmatter with at least a title
 - Keep file paths under 255 characters
 - Use only alphanumeric characters, hyphens, and underscores
+
+## Theme System
+
+Relay includes a flexible theme system that allows you to create custom page layouts using HTML templates with PHP.
+
+### Using Templates
+
+Specify a template for any page by adding a `template` field to the frontmatter:
+
+```markdown
+---
+title: My Blog Post
+date: 2024-12-18
+template: simple
+---
+
+Your content here...
+```
+
+If no template is specified, the `main` template is used by default.
+
+### Built-in Templates
+
+**main** (default):
+- Three-column responsive layout
+- Full-width header with navigation
+- Optional left and right sidebars
+- Adapts automatically based on which menus are configured
+
+**simple**:
+- Minimal single-column layout
+- No sidebars or complex navigation
+- Perfect for focused content pages
+
+### Creating Custom Templates
+
+1. Create a new `.html` file in `theme/templates/`:
+
+```bash
+touch theme/templates/my-template.html
+chmod 644 theme/templates/my-template.html
+```
+
+2. Write your template using HTML with PHP blocks:
+
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title><?php echo htmlspecialchars($page_title, ENT_QUOTES, 'UTF-8'); ?></title>
+    <link rel="stylesheet" href="/assets/css/relay.css">
+</head>
+<body>
+    <h1><?php echo htmlspecialchars($title, ENT_QUOTES, 'UTF-8'); ?></h1>
+    <div><?php echo $content_html; ?></div>
+</body>
+</html>
+```
+
+3. Use it in your content by specifying `template: my-template` in the frontmatter
+
+### Available Template Variables
+
+Templates have access to:
+- `$content_html` - Your rendered markdown content
+- `$metadata` - All frontmatter fields
+- `$title`, `$date`, `$author` - Common metadata fields
+- `$page_title` - The page title
+- `$header_menu`, `$left_menu`, `$right_menu` - Navigation menus
+- `$current_path`, `$menu_current_path` - Current page path
+- Helper functions: `menu_render()`, `menu_render_header()`
+
+See `theme/README.md` for complete documentation and examples.
 
 ## Menu Management
 
@@ -289,16 +364,27 @@ error_reporting(E_ALL);
 ├── docker-compose.yml     # Docker configuration
 ├── Dockerfile             # Docker image
 ├── .htaccess              # Apache configuration
+├── claude.md              # Context for Claude Code sessions
+├── CHANGELOG.md           # Version history
 ├── lib/                   # Core libraries
 │   ├── auth.php           # Authentication
 │   ├── content.php        # Content management
 │   ├── menu.php           # Menu system
-│   └── csrf.php           # CSRF protection
+│   ├── csrf.php           # CSRF protection
+│   └── theme.php          # Template rendering
 ├── content/               # Markdown content files
 ├── config/                # JSON configuration
 │   ├── users.json         # User credentials
 │   └── *-menu.json        # Menu configurations
-├── assets/                # Public assets
+├── theme/                 # Theme system
+│   ├── README.md          # Theme documentation
+│   ├── templates/         # HTML templates
+│   │   ├── main.html      # Default template
+│   │   └── simple.html    # Minimal template
+│   ├── css/               # Theme styles
+│   ├── js/                # Theme scripts
+│   └── assets/            # Theme assets
+├── assets/                # Core CMS assets
 │   ├── css/
 │   │   ├── relay.css      # Main stylesheet
 │   │   └── admin.css      # Admin stylesheet
@@ -310,11 +396,13 @@ error_reporting(E_ALL);
 
 ### Customization
 
-**Theme**: Edit `index.php` to customize the HTML structure and layout.
+**Templates**: Create custom templates in `theme/templates/` - see `theme/README.md` for details.
 
-**Styles**: Modify or extend `assets/css/relay.css` for custom styling.
+**Styles**: Modify or extend `assets/css/relay.css` for core styling, or add theme-specific styles in `theme/css/`.
 
 **Admin**: Customize `assets/css/admin.css` for admin interface styling.
+
+**Functionality**: Extend core libraries in `lib/` or add custom functions to `lib/theme.php`.
 
 ## Contributing
 

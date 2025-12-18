@@ -168,11 +168,11 @@ if ($action !== 'login') {
                     <span class="relay-admin-user">
                         <?php
                         $user = auth_get_user();
-                        echo htmlspecialchars($user['username']);
-                        if (auth_is_admin()) {
-                            echo ' <span class="relay-badge">Admin</span>';
-                        }
-                        ?>
+    echo htmlspecialchars($user['username']);
+    if (auth_is_admin()) {
+        echo ' <span class="relay-badge">Admin</span>';
+    }
+    ?>
                     </span>
                     <a href="/admin.php?action=logout">Log Out</a>
                 </nav>
@@ -200,8 +200,8 @@ if ($action !== 'login') {
                         <p>Manage navigation menus for your site.</p>
                         <ul class="relay-menu-list">
                             <?php
-                            $menus = menu_list();
-                            if (empty($menus)): ?>
+        $menus = menu_list();
+                if (empty($menus)): ?>
                                 <li><em>No menus found</em></li>
                             <?php else:
                                 foreach ($menus as $menu_name): ?>
@@ -246,7 +246,7 @@ if ($action !== 'login') {
                         <ul class="relay-user-list">
                             <?php
                             $users = auth_load_users();
-                            foreach ($users as $username => $user_data): ?>
+foreach ($users as $username => $user_data): ?>
                                 <li>
                                     <strong><?php echo htmlspecialchars($username); ?></strong>
                                     <span class="relay-badge"><?php echo htmlspecialchars($user_data['role']); ?></span>
@@ -286,10 +286,10 @@ if ($action !== 'login') {
                                     <div class="relay-menu-item-controls">
                                         <button type="button" class="relay-button-icon move-up" title="Move Up">↑</button>
                                         <button type="button" class="relay-button-icon move-down" title="Move Down">↓</button>
-                                        <button type="button" class="relay-button-icon indent-in" title="Indent">→</button>
                                         <button type="button" class="relay-button-icon indent-out" title="Outdent">←</button>
+                                        <button type="button" class="relay-button-icon indent-in" title="Indent">→</button>
                                     </div>
-                                    <div class="relay-menu-item-content" style="margin-left: <?php echo ($item['indent'] * 30); ?>px;">
+                                    <div class="relay-menu-item-content" style="margin-left: <?php echo($item['indent'] * 30); ?>px;">
                                         <input type="text" class="menu-item-label" value="<?php echo htmlspecialchars($item['label']); ?>" placeholder="Label">
                                         <input type="text" class="menu-item-url" value="<?php echo htmlspecialchars($item['url']); ?>" placeholder="URL">
                                         <button type="button" class="relay-button relay-button-danger delete-item">Delete</button>
