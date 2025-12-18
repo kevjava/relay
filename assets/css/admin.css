@@ -399,3 +399,32 @@ body.relay-admin {
         margin-left: 0 !important;
     }
 }
+
+/* Theme Settings */
+.relay-theme-info {
+    background: #f5f5f5;
+    border-left: 3px solid #007bff;
+    padding: 10px;
+    margin: 15px 0;
+}
+
+.relay-theme-info p {
+    margin: 5px 0;
+}
+
+.relay-select {
+    width: 100%;
+    padding: 8px 12px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    font-size: 14px;
+    font-family: inherit;
+    background-color: white;
+    cursor: pointer;
+}
+
+.relay-select:focus {
+    outline: none;
+    border-color: #007bff;
+    box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.1);
+}

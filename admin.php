@@ -11,6 +11,8 @@ require_once __DIR__ . '/lib/auth.php';
 require_once __DIR__ . '/lib/content.php';
 require_once __DIR__ . '/lib/menu.php';
 require_once __DIR__ . '/lib/csrf.php';
+require_once __DIR__ . '/lib/settings.php';
+require_once __DIR__ . '/lib/theme.php';
 
 // Start session
 auth_init_session();
@@ -63,6 +65,27 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $message = 'Password changed successfully.';
             } else {
                 $error = 'Failed to change password. Check your current password.';
+            }
+        }
+    }
+
+    // Change theme action
+    if ($action === 'change-theme') {
+        auth_require_login();
+
+        if (!csrf_validate_token($_POST['csrf_token'] ?? '')) {
+            $error = 'Invalid CSRF token.';
+        } else {
+            $new_theme = $_POST['theme'] ?? '';
+
+            if (theme_validate($new_theme)) {
+                if (theme_set_active($new_theme)) {
+                    $message = 'Theme changed successfully to ' . htmlspecialchars($new_theme) . '.';
+                } else {
+                    $error = 'Failed to save theme setting.';
+                }
+            } else {
+                $error = 'Invalid theme selected.';
             }
         }
     }
@@ -254,6 +277,53 @@ foreach ($users as $username => $user_data): ?>
                             <?php endforeach; ?>
                         </ul>
                         <small>Use CLI tools to manage users: <code>php admin-tools.php</code></small>
+                    </div>
+
+                    <div class="relay-admin-card">
+                        <h3>Theme Settings</h3>
+                        <p>Select the active theme for your site.</p>
+
+                        <?php
+                        $available_themes = theme_list_available();
+                        $active_theme = theme_get_active();
+                        $active_metadata = theme_get_metadata($active_theme);
+                        ?>
+
+                        <?php if (!empty($available_themes)): ?>
+                            <form method="post" action="/admin.php?action=change-theme">
+                                <?php echo csrf_token_field(); ?>
+
+                                <div class="relay-form-group">
+                                    <label for="theme">Active Theme</label>
+                                    <select id="theme" name="theme" class="relay-select">
+                                        <?php foreach ($available_themes as $theme_name):
+                                            $metadata = theme_get_metadata($theme_name);
+                                            $selected = ($theme_name === $active_theme) ? 'selected' : '';
+                                        ?>
+                                            <option value="<?php echo htmlspecialchars($theme_name); ?>" <?php echo $selected; ?>>
+                                                <?php echo htmlspecialchars($metadata['name'] ?? $theme_name); ?>
+                                                <?php if (isset($metadata['version'])): ?>
+                                                    (v<?php echo htmlspecialchars($metadata['version']); ?>)
+                                                <?php endif; ?>
+                                            </option>
+                                        <?php endforeach; ?>
+                                    </select>
+                                </div>
+
+                                <?php if ($active_metadata): ?>
+                                    <div class="relay-theme-info">
+                                        <p><strong>Current:</strong> <?php echo htmlspecialchars($active_metadata['name']); ?></p>
+                                        <?php if (isset($active_metadata['description'])): ?>
+                                            <p><small><?php echo htmlspecialchars($active_metadata['description']); ?></small></p>
+                                        <?php endif; ?>
+                                    </div>
+                                <?php endif; ?>
+
+                                <button type="submit" class="relay-button relay-button-primary">Change Theme</button>
+                            </form>
+                        <?php else: ?>
+                            <p class="relay-message relay-message-warning">No themes available. Create a theme in the <code>themes/</code> directory.</p>
+                        <?php endif; ?>
                     </div>
                 </div>
 

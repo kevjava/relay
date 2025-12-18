@@ -1,14 +1,14 @@
 [
-  {
-    "label": "Home",
-    "url": "/"
-  },
-  {
-    "label": "About",
-    "url": "/about"
-  },
-  {
-    "label": "Getting Started",
-    "url": "/getting-started"
-  }
+    {
+        "label": "Home",
+        "url": "/"
+    },
+    {
+        "label": "About",
+        "url": "/about"
+    },
+    {
+        "label": "Getting Started",
+        "url": "/getting-started"
+    }
 ]

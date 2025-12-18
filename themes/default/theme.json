@@ -1,0 +1,17 @@
+{
+    "name": "Relay Default Theme",
+    "description": "Three-column responsive layout with header and footer. Supports flexible sidebar configurations.",
+    "version": "1.0.0",
+    "author": "Relay CMS",
+    "templates": [
+        "main",
+        "simple"
+    ],
+    "default_template": "main",
+    "features": [
+        "Responsive grid layout",
+        "Dynamic column configuration",
+        "Header and footer sections",
+        "Left and right sidebar support"
+    ]
+}
