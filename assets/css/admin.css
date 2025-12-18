@@ -321,7 +321,7 @@ body.relay-admin {
 
 .relay-menu-item-controls {
     display: flex;
-    flex-direction: column;
+    flex-direction: row;
     gap: 0.25rem;
 }
 
