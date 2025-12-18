@@ -11,6 +11,7 @@ require_once __DIR__ . '/lib/auth.php';
 require_once __DIR__ . '/lib/content.php';
 require_once __DIR__ . '/lib/menu.php';
 require_once __DIR__ . '/lib/csrf.php';
+require_once __DIR__ . '/lib/theme.php';
 
 // Start session
 auth_init_session();
@@ -61,75 +62,25 @@ $right_menu = menu_load('right-menu');
 // Build current path for menu highlighting
 $menu_current_path = '/' . $current_path;
 
-?>
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="generator" content="Relay CMS">
-    <title><?php echo htmlspecialchars($page_title, ENT_QUOTES, 'UTF-8'); ?> - Relay</title>
-    <link rel="stylesheet" href="/assets/css/relay.css">
-</head>
-<body>
-    <header class="relay-header">
-        <div class="relay-container">
-            <div class="relay-header-content">
-                <div class="relay-logo">
-                    <a href="/">Relay</a>
-                </div>
-                <?php if (!empty($header_menu)): ?>
-                    <?php echo menu_render_header($header_menu, $menu_current_path); ?>
-                <?php endif; ?>
-            </div>
-        </div>
-    </header>
+// Determine which template to use
+$template = $metadata['template'] ?? 'main';
 
-    <main class="relay-main">
-        <div class="relay-container">
-            <div class="relay-grid">
-                <?php if (!empty($left_menu)): ?>
-                <aside class="relay-sidebar relay-sidebar-left">
-                    <nav class="relay-sidebar-nav">
-                        <?php echo menu_render($left_menu, $menu_current_path); ?>
-                    </nav>
-                </aside>
-                <?php endif; ?>
+// Prepare template variables
+$template_vars = [
+    'metadata' => $metadata,
+    'content_html' => $content_html,
+    'page_title' => $page_title,
+    'current_path' => $current_path,
+    'menu_current_path' => $menu_current_path,
+    'header_menu' => $header_menu,
+    'left_menu' => $left_menu,
+    'right_menu' => $right_menu,
+    // Convenient extractions
+    'title' => $metadata['title'] ?? null,
+    'date' => $metadata['date'] ?? null,
+    'author' => $metadata['author'] ?? null,
+];
 
-                <div class="relay-content <?php echo !empty($left_menu) ? 'with-sidebar' : 'full-width'; ?>">
-                    <?php if (isset($metadata['title'])): ?>
-                        <h1 class="relay-page-title"><?php echo htmlspecialchars($metadata['title'], ENT_QUOTES, 'UTF-8'); ?></h1>
-                    <?php endif; ?>
-
-                    <?php if (isset($metadata['date'])): ?>
-                        <div class="relay-page-meta">
-                            <span class="relay-page-date"><?php echo htmlspecialchars($metadata['date'], ENT_QUOTES, 'UTF-8'); ?></span>
-                            <?php if (isset($metadata['author'])): ?>
-                                <span class="relay-page-author">by <?php echo htmlspecialchars($metadata['author'], ENT_QUOTES, 'UTF-8'); ?></span>
-                            <?php endif; ?>
-                        </div>
-                    <?php endif; ?>
-
-                    <div class="relay-content-body">
-                        <?php echo $content_html; ?>
-                    </div>
-                </div>
-
-                <?php if (!empty($right_menu)): ?>
-                <aside class="relay-sidebar relay-sidebar-right">
-                    <nav class="relay-sidebar-nav">
-                        <?php echo menu_render($right_menu, $menu_current_path); ?>
-                    </nav>
-                </aside>
-                <?php endif; ?>
-            </div>
-        </div>
-    </main>
-
-    <footer class="relay-footer">
-        <div class="relay-container">
-            <p>&copy; <?php echo date('Y'); ?> Relay CMS. Lightweight PHP content management.</p>
-        </div>
-    </footer>
-</body>
-</html>
+// Render template
+theme_render_template($template, $template_vars);
+exit;
