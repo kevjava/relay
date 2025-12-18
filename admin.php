@@ -71,10 +71,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if ($action === 'save-menu') {
         auth_require_login();
 
+        // Clean any output buffers and start fresh to prevent corrupted JSON
+        while (ob_get_level()) {
+            ob_end_clean();
+        }
+        ob_start();
+
         header('Content-Type: application/json');
 
         if (!csrf_validate_token($_POST['csrf_token'] ?? '')) {
             echo json_encode(['success' => false, 'error' => 'Invalid CSRF token']);
+            ob_end_flush();
             exit;
         }
 
@@ -85,6 +92,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         if ($menu_data === null) {
             echo json_encode(['success' => false, 'error' => 'Invalid menu data']);
+            ob_end_flush();
             exit;
         }
 
@@ -93,6 +101,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         } else {
             echo json_encode(['success' => false, 'error' => 'Failed to save menu']);
         }
+        ob_end_flush();
         exit;
     }
 }

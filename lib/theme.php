@@ -68,7 +68,7 @@ function theme_get_template_path(string $template): string|false {
     // Verify the resolved path is within theme/templates directory
     $theme_templates_real = realpath(RELAY_THEME_DIR . '/templates');
 
-    if ($theme_templates_real === false || strpos($real_path, $theme_templates_real) !== 0) {
+    if ($theme_templates_real === false || !str_starts_with($real_path, $theme_templates_real)) {
         return false;
     }
 
