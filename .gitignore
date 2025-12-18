@@ -1,0 +1,25 @@
+# Composer dependencies
+/vendor/
+composer.lock
+
+# Configuration files with sensitive data
+/config/users.json
+
+# IDE and editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# PHP session files
+/sessions/
+
+# Logs
+*.log
+/logs/
+
+# Environment files
+.env
+.env.local

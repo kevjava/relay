@@ -1,0 +1,2 @@
+# Relay CMS - Deny direct access to configuration files
+Require all denied

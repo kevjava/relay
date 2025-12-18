@@ -1,0 +1,16 @@
+[
+  {
+    "label": "Documentation",
+    "url": "#",
+    "children": [
+      {
+        "label": "Getting Started",
+        "url": "/getting-started"
+      },
+      {
+        "label": "About",
+        "url": "/about"
+      }
+    ]
+  }
+]

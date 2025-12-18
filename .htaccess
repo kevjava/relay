@@ -1,0 +1,42 @@
+# Relay CMS - Apache Configuration
+
+# Enable Rewrite Engine
+RewriteEngine On
+
+# Redirect all requests to existing files or directories
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteRule ^(.*)$ index.php?p=$1 [L,QSA]
+
+# Security Headers
+<IfModule mod_headers.c>
+    # Prevent clickjacking
+    Header set X-Frame-Options "SAMEORIGIN"
+
+    # Prevent MIME type sniffing
+    Header set X-Content-Type-Options "nosniff"
+
+    # Enable XSS protection
+    Header set X-XSS-Protection "1; mode=block"
+
+    # Referrer policy
+    Header set Referrer-Policy "strict-origin-when-cross-origin"
+</IfModule>
+
+# Disable directory browsing
+Options -Indexes
+
+# Protect sensitive files
+<FilesMatch "^(composer\.(json|lock)|\.git.*|\.env)">
+    Require all denied
+</FilesMatch>
+
+# Set default charset
+AddDefaultCharset UTF-8
+
+# PHP settings (if mod_php is available)
+<IfModule mod_php.c>
+    php_flag expose_php Off
+    php_flag session.cookie_httponly On
+    php_value session.cookie_samesite Strict
+</IfModule>

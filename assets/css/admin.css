@@ -1,0 +1,401 @@
+/**
+ * Relay CMS - Admin Interface Stylesheet
+ */
+
+/* Admin Body */
+body.relay-admin {
+    background-color: #f5f5f5;
+}
+
+/* Login Page */
+.relay-admin-login {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    background: linear-gradient(135deg, #0066cc 0%, #0052a3 100%);
+}
+
+.relay-admin-login-box {
+    background: white;
+    padding: 2rem;
+    border-radius: 8px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    width: 100%;
+    max-width: 400px;
+}
+
+.relay-admin-login-box h1 {
+    margin-bottom: 1.5rem;
+    text-align: center;
+    color: #333;
+    font-size: 1.75rem;
+}
+
+/* Admin Header */
+.relay-admin-header {
+    background-color: #222;
+    color: white;
+    padding: 1rem 0;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.relay-admin-header-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+.relay-admin-header h1 {
+    font-size: 1.5rem;
+    margin: 0;
+}
+
+.relay-admin-header h1 a {
+    color: white;
+    text-decoration: none;
+}
+
+.relay-admin-nav {
+    display: flex;
+    gap: 1.5rem;
+    align-items: center;
+}
+
+.relay-admin-nav a {
+    color: white;
+    text-decoration: none;
+    transition: opacity 0.2s;
+}
+
+.relay-admin-nav a:hover {
+    opacity: 0.8;
+}
+
+.relay-admin-user {
+    color: #aaa;
+}
+
+/* Admin Content */
+.relay-admin-content {
+    padding: 2rem 0;
+    min-height: calc(100vh - 200px);
+}
+
+.relay-admin-content h2 {
+    margin-bottom: 1.5rem;
+    color: #222;
+}
+
+/* Messages */
+.relay-message {
+    padding: 1rem;
+    border-radius: 4px;
+    margin-bottom: 1.5rem;
+}
+
+.relay-message-success {
+    background-color: #d4edda;
+    color: #155724;
+    border: 1px solid #c3e6cb;
+}
+
+.relay-message-error {
+    background-color: #f8d7da;
+    color: #721c24;
+    border: 1px solid #f5c6cb;
+}
+
+/* Admin Grid */
+.relay-admin-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 1.5rem;
+    margin-top: 1.5rem;
+}
+
+/* Admin Card */
+.relay-admin-card {
+    background: white;
+    padding: 1.5rem;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.relay-admin-card h3 {
+    margin-bottom: 1rem;
+    color: #333;
+    font-size: 1.25rem;
+}
+
+.relay-admin-card p {
+    color: #666;
+    margin-bottom: 1rem;
+}
+
+/* Forms */
+.relay-form-group {
+    margin-bottom: 1.5rem;
+}
+
+.relay-form-group label {
+    display: block;
+    margin-bottom: 0.5rem;
+    font-weight: 500;
+    color: #333;
+}
+
+.relay-form-group input[type="text"],
+.relay-form-group input[type="password"] {
+    width: 100%;
+    padding: 0.75rem;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 1rem;
+}
+
+.relay-form-group input:focus {
+    outline: none;
+    border-color: #0066cc;
+    box-shadow: 0 0 0 3px rgba(0, 102, 204, 0.1);
+}
+
+.relay-form-group small {
+    display: block;
+    margin-top: 0.25rem;
+    color: #666;
+    font-size: 0.875rem;
+}
+
+/* Buttons */
+.relay-button {
+    display: inline-block;
+    padding: 0.75rem 1.5rem;
+    border: none;
+    border-radius: 4px;
+    font-size: 1rem;
+    cursor: pointer;
+    text-decoration: none;
+    transition: background-color 0.2s;
+    font-family: inherit;
+}
+
+.relay-button-primary {
+    background-color: #0066cc;
+    color: white;
+}
+
+.relay-button-primary:hover {
+    background-color: #0052a3;
+}
+
+.relay-button-secondary {
+    background-color: #6c757d;
+    color: white;
+}
+
+.relay-button-secondary:hover {
+    background-color: #5a6268;
+}
+
+.relay-button-success {
+    background-color: #28a745;
+    color: white;
+}
+
+.relay-button-success:hover {
+    background-color: #218838;
+}
+
+.relay-button-danger {
+    background-color: #dc3545;
+    color: white;
+}
+
+.relay-button-danger:hover {
+    background-color: #c82333;
+}
+
+.relay-button-icon {
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 1.25rem;
+    padding: 0.25rem 0.5rem;
+    color: #666;
+    transition: color 0.2s;
+}
+
+.relay-button-icon:hover {
+    color: #0066cc;
+}
+
+/* Lists */
+.relay-menu-list,
+.relay-user-list {
+    list-style: none;
+    padding: 0;
+}
+
+.relay-menu-list li,
+.relay-user-list li {
+    padding: 0.75rem;
+    border-bottom: 1px solid #eee;
+}
+
+.relay-menu-list li:last-child,
+.relay-user-list li:last-child {
+    border-bottom: none;
+}
+
+.relay-menu-list a {
+    color: #0066cc;
+    text-decoration: none;
+    font-weight: 500;
+}
+
+.relay-menu-list a:hover {
+    text-decoration: underline;
+}
+
+/* Badge */
+.relay-badge {
+    display: inline-block;
+    padding: 0.25rem 0.5rem;
+    font-size: 0.75rem;
+    font-weight: bold;
+    border-radius: 3px;
+    background-color: #0066cc;
+    color: white;
+    text-transform: uppercase;
+}
+
+/* Menu Editor */
+.relay-menu-editor-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5rem;
+    flex-wrap: wrap;
+    gap: 1rem;
+}
+
+.relay-menu-editor {
+    background: white;
+    padding: 1.5rem;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.relay-menu-editor-toolbar {
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+    margin-bottom: 1.5rem;
+    flex-wrap: wrap;
+}
+
+.relay-menu-items {
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    padding: 1rem;
+    min-height: 200px;
+}
+
+.relay-menu-empty {
+    text-align: center;
+    color: #999;
+    padding: 2rem;
+}
+
+.relay-menu-item {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 0.75rem;
+    padding: 0.75rem;
+    background-color: #f8f9fa;
+    border-radius: 4px;
+    border: 1px solid #e0e0e0;
+}
+
+.relay-menu-item-controls {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+.relay-menu-item-content {
+    flex: 1;
+    display: flex;
+    gap: 0.75rem;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+.relay-menu-item-content input {
+    flex: 1;
+    min-width: 150px;
+    padding: 0.5rem;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+}
+
+.relay-menu-item-content input:focus {
+    outline: none;
+    border-color: #0066cc;
+}
+
+/* Save Status */
+#save-status {
+    font-size: 0.9rem;
+}
+
+.relay-status-saving {
+    color: #666;
+}
+
+.relay-status-success {
+    color: #28a745;
+    font-weight: 500;
+}
+
+.relay-status-error {
+    color: #dc3545;
+    font-weight: 500;
+}
+
+/* Admin Footer */
+.relay-admin-footer {
+    background-color: #222;
+    color: #aaa;
+    padding: 1.5rem 0;
+    text-align: center;
+    font-size: 0.875rem;
+}
+
+/* Responsive */
+@media (max-width: 767px) {
+    .relay-admin-header-content {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .relay-admin-nav {
+        margin-top: 1rem;
+        width: 100%;
+        justify-content: space-between;
+    }
+
+    .relay-menu-item {
+        flex-direction: column;
+    }
+
+    .relay-menu-item-controls {
+        flex-direction: row;
+    }
+
+    .relay-menu-item-content {
+        margin-left: 0 !important;
+    }
+}
