@@ -1,0 +1,189 @@
+/**
+ * Relay CMS - USWDS Theme Custom Styles
+ *
+ * Additional styling for the USWDS theme to enhance the default
+ * U.S. Web Design System with CMS-specific improvements.
+ */
+
+/* Ensure proper spacing for main content area */
+.usa-section {
+    padding-top: 2rem;
+    padding-bottom: 2rem;
+}
+
+/* Improve sidebar navigation spacing */
+.usa-sidenav {
+    margin-top: 0;
+}
+
+.usa-sidenav__item {
+    border-top: 1px solid #dfe1e2;
+}
+
+.usa-sidenav__item:first-child {
+    border-top: none;
+}
+
+/* Nested sidenav items indentation */
+.usa-sidenav__sublist .usa-sidenav__sublist {
+    padding-left: 1rem;
+}
+
+.usa-sidenav__sublist .usa-sidenav__sublist a {
+    padding-left: 1.5rem;
+}
+
+/* Content typography enhancements */
+.usa-prose {
+    max-width: none;
+}
+
+.usa-prose > *:first-child {
+    margin-top: 0;
+}
+
+.usa-prose img {
+    max-width: 100%;
+    height: auto;
+}
+
+.usa-prose pre {
+    background-color: #f0f0f0;
+    border: 1px solid #dfe1e2;
+    border-radius: 0.25rem;
+    padding: 1rem;
+    overflow-x: auto;
+}
+
+.usa-prose code {
+    background-color: #f0f0f0;
+    padding: 0.125rem 0.25rem;
+    border-radius: 0.125rem;
+    font-size: 0.9em;
+}
+
+.usa-prose pre code {
+    background-color: transparent;
+    padding: 0;
+}
+
+/* Table styling */
+.usa-prose table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 1.5rem 0;
+}
+
+.usa-prose table th,
+.usa-prose table td {
+    border: 1px solid #dfe1e2;
+    padding: 0.5rem 0.75rem;
+    text-align: left;
+}
+
+.usa-prose table th {
+    background-color: #f0f0f0;
+    font-weight: bold;
+}
+
+/* Blockquote styling */
+.usa-prose blockquote {
+    border-left: 4px solid #005ea2;
+    padding-left: 1rem;
+    margin: 1.5rem 0;
+    font-style: italic;
+    color: #565c65;
+}
+
+/* Footer improvements */
+.usa-footer__return-to-top {
+    padding-top: 1.5rem;
+    padding-bottom: 1rem;
+}
+
+.usa-footer__secondary-section {
+    background-color: #f0f0f0;
+    padding-top: 1.5rem;
+    padding-bottom: 1.5rem;
+}
+
+/* Header improvements */
+.usa-header .usa-logo {
+    font-size: 1.5rem;
+}
+
+.usa-logo__text a {
+    text-decoration: none;
+    color: #1b1b1b;
+    font-weight: bold;
+}
+
+.usa-logo__text a:hover {
+    color: #005ea2;
+}
+
+/* Navigation active state enhancement */
+.usa-nav-link.usa-current {
+    color: #005ea2;
+    font-weight: bold;
+}
+
+.usa-sidenav a.usa-current {
+    color: #005ea2;
+    font-weight: bold;
+    border-left: 4px solid #005ea2;
+    padding-left: calc(1rem - 4px);
+}
+
+/* Responsive adjustments */
+@media (max-width: 63.99em) {
+    .usa-section {
+        padding-top: 1.5rem;
+        padding-bottom: 1.5rem;
+    }
+
+    /* Stack sidebars on mobile */
+    aside {
+        margin-bottom: 2rem;
+    }
+}
+
+/* Print styles */
+@media print {
+    .usa-header,
+    .usa-footer,
+    .usa-sidenav,
+    .usa-skipnav {
+        display: none;
+    }
+
+    .usa-section {
+        padding: 0;
+    }
+
+    .grid-container {
+        max-width: none;
+    }
+
+    article {
+        max-width: 100%;
+    }
+}
+
+/* Accessibility enhancements */
+.usa-skipnav:focus {
+    position: absolute;
+    left: 0;
+    top: 0;
+    background: #005ea2;
+    color: white;
+    padding: 1rem;
+    z-index: 10000;
+    text-decoration: none;
+}
+
+/* Focus visible improvements */
+*:focus-visible {
+    outline: 2px solid #2491ff;
+    outline-offset: 2px;
+}

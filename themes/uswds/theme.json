@@ -1,0 +1,18 @@
+{
+    "name": "U.S. Web Design System Theme",
+    "description": "USWDS 3.0-compliant theme for government organizations. Follows federal web standards with accessible, responsive design.",
+    "version": "1.0.0",
+    "author": "Relay CMS",
+    "templates": [
+        "main",
+        "simple"
+    ],
+    "default_template": "main",
+    "features": [
+        "USWDS 3.7 components",
+        "508 compliant",
+        "WCAG 2.1 AA accessible",
+        "Responsive grid layout",
+        "Government branding"
+    ]
+}
