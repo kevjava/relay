@@ -133,11 +133,11 @@ If no template is specified, the `main` template is used by default.
 
 ### Creating Custom Templates
 
-1. Create a new `.html` file in `theme/templates/`:
+1. Create a new `.php` file in the active theme's templates directory (e.g., `themes/default/templates/`):
 
 ```bash
-touch theme/templates/my-template.html
-chmod 644 theme/templates/my-template.html
+touch themes/default/templates/my-template.php
+chmod 644 themes/default/templates/my-template.php
 ```
 
 2. Write your template using HTML with PHP blocks:
@@ -148,6 +148,7 @@ chmod 644 theme/templates/my-template.html
 <head>
     <title><?php echo htmlspecialchars($page_title, ENT_QUOTES, 'UTF-8'); ?></title>
     <link rel="stylesheet" href="/assets/css/relay.css">
+    <link rel="stylesheet" href="/themes/default/css/default.css">
 </head>
 <body>
     <h1><?php echo htmlspecialchars($title, ENT_QUOTES, 'UTF-8'); ?></h1>
@@ -169,7 +170,22 @@ Templates have access to:
 - `$current_path`, `$menu_current_path` - Current page path
 - Helper functions: `menu_render()`, `menu_render_header()`
 
-See `theme/README.md` for complete documentation and examples.
+### Theme Selection
+
+Relay supports multiple themes. The active theme is configured in `config/settings.json`:
+
+```json
+{
+  "active_theme": "default"
+}
+```
+
+Available themes are located in the `themes/` directory. Each theme contains:
+- `templates/` - PHP template files
+- `css/` - Theme-specific stylesheets
+- `js/` - Theme-specific JavaScript
+- `assets/` - Theme-specific images and other assets
+- `theme.json` - Theme metadata
 
 ## Menu Management
 
@@ -375,18 +391,24 @@ error_reporting(E_ALL);
 ├── content/               # Markdown content files
 ├── config/                # JSON configuration
 │   ├── users.json         # User credentials
+│   ├── settings.json      # System settings (active theme, etc.)
 │   └── *-menu.json        # Menu configurations
-├── theme/                 # Theme system
-│   ├── README.md          # Theme documentation
-│   ├── templates/         # HTML templates
-│   │   ├── main.html      # Default template
-│   │   └── simple.html    # Minimal template
-│   ├── css/               # Theme styles
-│   ├── js/                # Theme scripts
-│   └── assets/            # Theme assets
+├── themes/                # Multi-theme system
+│   ├── default/           # Default theme
+│   │   ├── templates/    # PHP templates
+│   │   │   ├── main.php # Three-column layout
+│   │   │   └── simple.php # Minimal template
+│   │   ├── css/          # Theme styles
+│   │   │   └── default.css
+│   │   ├── js/           # Theme scripts
+│   │   └── assets/       # Theme assets
+│   └── uswds/            # US Web Design System theme
+│       ├── templates/
+│       ├── css/
+│       └── assets/
 ├── assets/                # Core CMS assets
 │   ├── css/
-│   │   ├── relay.css      # Main stylesheet
+│   │   ├── relay.css      # Core stylesheet (for admin/errors)
 │   │   └── admin.css      # Admin stylesheet
 │   ├── js/
 │   │   └── menu-editor.js # Menu editor JS
@@ -396,13 +418,22 @@ error_reporting(E_ALL);
 
 ### Customization
 
-**Templates**: Create custom templates in `theme/templates/` - see `theme/README.md` for details.
+**Templates**: Create custom templates in `themes/[theme-name]/templates/`. Each theme can have its own set of templates.
 
-**Styles**: Modify or extend `assets/css/relay.css` for core styling, or add theme-specific styles in `theme/css/`.
+**Styles**:
+- Core styles: `assets/css/relay.css` (minimal styles for admin/error pages)
+- Theme styles: `themes/[theme-name]/css/` (theme-specific styling)
 
 **Admin**: Customize `assets/css/admin.css` for admin interface styling.
 
 **Functionality**: Extend core libraries in `lib/` or add custom functions to `lib/theme.php`.
+
+**Creating a New Theme**:
+1. Create a new directory in `themes/` (e.g., `themes/mytheme/`)
+2. Add required structure: `templates/`, `css/`, `js/`, `assets/`
+3. Create `theme.json` with metadata (name, version, templates list)
+4. Create at least `templates/main.php`
+5. Activate by setting `"active_theme": "mytheme"` in `config/settings.json`
 
 ## Contributing
 

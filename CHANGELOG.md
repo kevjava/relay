@@ -8,17 +8,30 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- **Multi-Theme System** - Complete support for multiple themes
+  - New `themes/` directory with multi-theme architecture
+  - `themes/default/` - Default theme with three-column layout
+  - `themes/uswds/` - US Web Design System theme
+  - `theme.json` metadata files for each theme
+  - Theme validation functions in `lib/theme.php`
+  - Theme selection via `config/settings.json` with `active_theme` field
+  - Functions: `theme_list_available()`, `theme_get_metadata()`, `theme_validate()`, `theme_set_active()`
+
 - **Theme System** - Complete template system for custom layouts
-  - New `lib/theme.php` library with template rendering functions
+  - New `lib/theme.php` library (299 lines) with template rendering functions
   - Template sanitization and validation to prevent security issues
   - Support for specifying templates via `template:` frontmatter field
   - Default template automatically used when not specified
-  - `theme/templates/` directory for template storage
-  - `theme/templates/main.html` - Default three-column layout template
-  - `theme/templates/simple.html` - Minimal template example
+  - `themes/[theme-name]/templates/` directory structure for each theme
+  - Default theme templates: `main.php` (three-column), `simple.php` (minimal)
   - Theme directory structure for CSS, JS, and assets
   - Template variables passed via `extract()` for clean PHP syntax
-  - Full documentation in `theme/README.md`
+
+- **CSS Architecture Split** - Separated core and theme-specific styles
+  - Core styles: `assets/css/relay.css` (87 lines, 1.5KB) - minimal styles for admin/error pages
+  - Theme styles: `themes/default/css/default.css` (261 lines, 4.6KB) - complete frontend styles
+  - Admin interface works standalone without any theme installed
+  - Templates load both core and theme CSS files
 
 - **Three-Column Layout** - Redesigned default template
   - Full-width header with site title and navigation
@@ -36,9 +49,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Access to all helper functions: `menu_render()`, `menu_render_header()`
 
 - **Documentation**
-  - `claude.md` - Context file for Claude Code sessions
-  - `theme/README.md` - Comprehensive theme development guide
+  - `CLAUDE.md` - Context file for Claude Code sessions with complete technical details
   - `CHANGELOG.md` - This file
+  - Updated README.md with multi-theme architecture documentation
+
+- **Security Hardening**
+  - `.htaccess` files in all theme template directories - Blocks direct HTTP access to template files
+  - Prevents source code exposure and improves security
+
+### Removed
+- **Legacy Single-Theme Support** - Removed backward compatibility for `theme/` directory
+  - Removed `theme/` directory and all legacy theme code
+  - Removed `RELAY_THEME_DIR` constant from `lib/theme.php`
+  - Removed legacy fallback logic from theme functions
+  - Only `themes/` directory structure is now supported
+  - Simplified codebase by removing dual-mode support
 
 ### Changed
 - **index.php** - Refactored to use theme system
@@ -58,6 +83,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Changed from vertical stacking to horizontal row
   - Updated `flex-direction: column` to `flex-direction: row` in admin.css
   - Buttons now display as: ↑ ↓ ← → (left to right)
+
+- **Template File Extension** - Changed from .html to .php
+  - Template files now use `.php` extension instead of `.html`
+  - More semantically correct for files containing PHP code
+  - Better syntax highlighting and IDE support
+  - Updated `lib/theme.php` to look for `.php` files
+  - Added `.htaccess` to all `themes/[theme-name]/templates/` directories
+  - Prevents source code exposure if templates are accessed directly
 
 ### Fixed
 - **Menu Editor AJAX Errors** - Fixed JSON parsing failures
@@ -87,7 +120,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Template Path Validation** - Robust security measures
   - Template names sanitized with regex: `^[a-zA-Z0-9_-]+$`
   - No slashes allowed in template names (prevents path traversal)
-  - `realpath()` verification ensures paths stay within `theme/templates/`
+  - `realpath()` verification ensures paths stay within `themes/[theme-name]/templates/`
   - Follows same security patterns as content path sanitization
 
 - **Output Buffer Management** - Prevents information disclosure
@@ -121,15 +154,18 @@ This changelog was started on December 18, 2024, documenting the theme system im
 
 These features are under consideration but not yet implemented:
 
+### Already Implemented ✅
+- ✅ Theme configuration file (`theme.json` in each theme)
+- ✅ Multiple theme support with theme switching (backend support complete)
+
+### Not Yet Implemented
 - Template inheritance system (parent/child templates)
 - Template partials/includes for reusable components
-- Theme configuration file (`theme/theme.json`)
-- Multiple theme support with theme switching
+- Theme switching UI in admin interface (backend support exists)
 - Content API for headless CMS usage
 - Image upload management
 - Content versioning (Git-based or file-based)
 - Full-text search functionality
 - Web-based markdown editor in admin interface
-- Template helper functions library
 - Template caching for performance
 - Drag-and-drop menu reordering

@@ -52,8 +52,8 @@
                 <div class="relay-menu-item-controls">
                     <button type="button" class="relay-button-icon move-up" title="Move Up">↑</button>
                     <button type="button" class="relay-button-icon move-down" title="Move Down">↓</button>
-                    <button type="button" class="relay-button-icon indent-in" title="Indent">→</button>
                     <button type="button" class="relay-button-icon indent-out" title="Outdent">←</button>
+                    <button type="button" class="relay-button-icon indent-in" title="Indent">→</button>
                 </div>
                 <div class="relay-menu-item-content" style="margin-left: 0px;">
                     <input type="text" class="menu-item-label" value="" placeholder="Label">

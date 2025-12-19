@@ -6,6 +6,7 @@
     <meta name="generator" content="Relay CMS">
     <title><?php echo htmlspecialchars($page_title, ENT_QUOTES, 'UTF-8'); ?> - Relay</title>
     <link rel="stylesheet" href="/assets/css/relay.css">
+    <link rel="stylesheet" href="/themes/default/css/default.css">
 </head>
 <body>
     <!-- Full-width Header -->

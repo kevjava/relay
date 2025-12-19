@@ -3,29 +3,21 @@
  * Relay Theme System
  *
  * Provides template rendering functionality for the Relay CMS.
- * Templates are plain HTML files with PHP blocks that can be specified
- * via the 'template' frontmatter field in markdown files.
+ * Templates are PHP files that can be specified via the 'template'
+ * frontmatter field in markdown files.
  */
 
-// Define theme directory constants
-define('RELAY_THEME_DIR', __DIR__ . '/../theme');
+// Define theme directory constant
 define('RELAY_THEMES_DIR', __DIR__ . '/../themes');
 
 /**
  * Get the active theme directory path
  *
  * Returns the active theme directory based on settings.json.
- * Falls back to legacy theme/ directory if themes/ doesn't exist.
  *
  * @return string Absolute path to active theme directory
  */
 function theme_get_active_dir(): string {
-    // Check if multi-theme structure exists
-    if (!is_dir(RELAY_THEMES_DIR)) {
-        // Fallback to legacy single theme directory
-        return RELAY_THEME_DIR;
-    }
-
     // Load settings to get active theme
     require_once __DIR__ . '/settings.php';
     $active_theme = settings_get('active_theme', 'default');
@@ -41,11 +33,6 @@ function theme_get_active_dir(): string {
     if (!is_dir($theme_path)) {
         // Fallback to default theme
         $theme_path = RELAY_THEMES_DIR . '/default';
-
-        // If default doesn't exist, use legacy
-        if (!is_dir($theme_path)) {
-            return RELAY_THEME_DIR;
-        }
     }
 
     return $theme_path;
@@ -96,7 +83,7 @@ function theme_get_template_path(string $template): string|false {
     }
 
     // Build template path
-    $template_path = theme_get_active_dir() . '/templates/' . $sanitized . '.html';
+    $template_path = theme_get_active_dir() . '/templates/' . $sanitized . '.php';
 
     // Resolve real path
     $real_path = realpath($template_path);
@@ -153,7 +140,7 @@ function theme_render_template(string $template, array $variables): void {
         // If main template also doesn't exist, fatal error
         if ($template_path === false) {
             http_response_code(500);
-            die('Template system error: main template not found at ' . theme_get_active_dir() . '/templates/main.html');
+            die('Template system error: main template not found at ' . theme_get_active_dir() . '/templates/main.php');
         }
     }
 
@@ -171,9 +158,8 @@ function theme_render_template(string $template, array $variables): void {
  * @return array Array of theme names
  */
 function theme_list_available(): array {
-    // If themes directory doesn't exist, return legacy theme
     if (!is_dir(RELAY_THEMES_DIR)) {
-        return ['legacy'];
+        return [];
     }
 
     $themes = [];
@@ -215,18 +201,6 @@ function theme_get_metadata(string $theme_name): array|false {
         return false;
     }
 
-    // Handle legacy theme
-    if ($theme_name === 'legacy') {
-        return [
-            'name' => 'Legacy Theme',
-            'description' => 'Original single-theme installation',
-            'version' => '1.0.0',
-            'author' => 'Relay CMS',
-            'templates' => ['main', 'simple'],
-            'default_template' => 'main'
-        ];
-    }
-
     $metadata_path = RELAY_THEMES_DIR . '/' . $theme_name . '/theme.json';
 
     if (!file_exists($metadata_path)) {
@@ -265,11 +239,6 @@ function theme_validate(string $theme_name): bool {
         return false;
     }
 
-    // Legacy theme is always valid if directory exists
-    if ($theme_name === 'legacy') {
-        return is_dir(RELAY_THEME_DIR);
-    }
-
     $theme_path = RELAY_THEMES_DIR . '/' . $theme_name;
 
     // Check theme directory exists
@@ -281,13 +250,13 @@ function theme_validate(string $theme_name): bool {
     $required = [
         '/theme.json',
         '/templates',
-        '/templates/main.html'
+        '/templates/main.php'
     ];
 
     foreach ($required as $item) {
         $full_path = $theme_path . $item;
 
-        if (str_ends_with($item, '.json') || str_ends_with($item, '.html')) {
+        if (str_ends_with($item, '.json') || str_ends_with($item, '.php')) {
             if (!file_exists($full_path)) {
                 return false;
             }
@@ -308,11 +277,6 @@ function theme_validate(string $theme_name): bool {
  * @return string Active theme name
  */
 function theme_get_active(): string {
-    // If themes directory doesn't exist, return legacy
-    if (!is_dir(RELAY_THEMES_DIR)) {
-        return 'legacy';
-    }
-
     require_once __DIR__ . '/settings.php';
     return settings_get('active_theme', 'default');
 }
