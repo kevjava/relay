@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="generator" content="Relay CMS - USWDS Theme">
-    <title><?php echo htmlspecialchars($page_title, ENT_QUOTES, 'UTF-8'); ?> - Relay</title>
+    <title><?php echo htmlspecialchars($page_title, ENT_QUOTES, 'UTF-8'); ?></title>
 
     <!-- U.S. Web Design System CSS (local) -->
     <link rel="stylesheet" href="/themes/uswds/css/uswds.min.css">
@@ -63,27 +63,38 @@
                 echo 'desktop:grid-col-12';
             }
     ?>">
-                        <?php if (isset($metadata['title'])): ?>
-                            <h1 class="font-heading-xl margin-y-0"><?php echo htmlspecialchars($metadata['title'], ENT_QUOTES, 'UTF-8'); ?></h1>
-                        <?php endif; ?>
-
-                        <?php if (isset($metadata['date'])): ?>
-                            <div class="usa-prose margin-top-1 margin-bottom-2">
-                                <p class="usa-intro text-base-dark">
-                                    <time datetime="<?php echo htmlspecialchars($metadata['date'], ENT_QUOTES, 'UTF-8'); ?>">
-                                        <?php echo htmlspecialchars($metadata['date'], ENT_QUOTES, 'UTF-8'); ?>
-                                    </time>
-                                    <?php if (isset($metadata['author'])): ?>
-                                        <span class="text-base"> by <?php echo htmlspecialchars($metadata['author'], ENT_QUOTES, 'UTF-8'); ?></span>
-                                    <?php endif; ?>
-                                </p>
-                            </div>
-                        <?php endif; ?>
 
                         <div class="usa-prose">
                             <?php echo $content_html; ?>
                         </div>
+
+                        <hr class="margin-top-2"/>
+                        <div class="grid-container padding-x-0">
+                            <div class="grid-row">
+                                <?php if (isset($metadata['title'])): ?>
+                                    <div class="grid-col">
+                                        <p class="text-base-dark margin-y-0">
+                                            <span class="text-base"><?php echo htmlspecialchars($metadata['title'], ENT_QUOTES, 'UTF-8'); ?></span>
+                                        </p>
+                                    </div>
+                                <?php endif; ?>
+
+                                <div class="grid-col">
+                                    <p class="text-base-dark text-right margin-y-0">
+                                        <?php if (isset($metadata['date'])): ?>
+                                            <time datetime="<?php echo htmlspecialchars($metadata['date'], ENT_QUOTES, 'UTF-8'); ?>">
+                                                <?php echo htmlspecialchars($metadata['date'], ENT_QUOTES, 'UTF-8'); ?>
+                                            </time>
+                                        <?php endif; ?>
+                                        <?php if (isset($metadata['author'])): ?>
+                                            <span class="text-italic"> by <?php echo htmlspecialchars($metadata['author'], ENT_QUOTES, 'UTF-8'); ?></span>
+                                        <?php endif; ?>
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
                     </article>
+
 
                     <!-- Right Sidebar Navigation -->
                     <?php if ($has_right): ?>
