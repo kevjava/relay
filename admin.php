@@ -382,9 +382,7 @@ $active_metadata = theme_get_metadata($active_theme);
                 </div>
 
                 <input type="hidden" id="menu-name" value="<?php echo htmlspecialchars($menu_name); ?>">
-                <script>
-                    const BASE_PATH = '<?php echo url_get_base_path(); ?>';
-                </script>
+                <input type="hidden" id="base-path" value="<?php echo htmlspecialchars(url_get_base_path(), ENT_QUOTES, 'UTF-8'); ?>">
                 <script src="<?php echo url_base('/assets/js/menu-editor.js'); ?>"></script>
 
             <?php endif; ?>
