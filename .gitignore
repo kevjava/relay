@@ -23,3 +23,6 @@ composer.lock
 # Environment files
 .env
 .env.local
+
+# PHP CS Fixer cache
+.php-cs-fixer.cache
