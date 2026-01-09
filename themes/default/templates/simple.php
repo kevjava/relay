@@ -4,8 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title><?php echo htmlspecialchars($page_title, ENT_QUOTES, 'UTF-8'); ?></title>
-    <link rel="stylesheet" href="/assets/css/relay.css">
-    <link rel="stylesheet" href="/themes/default/css/default.css">
+    <link rel="stylesheet" href="<?php echo url_base('/assets/css/relay.css'); ?>">
+    <link rel="stylesheet" href="<?php echo url_base('/themes/default/css/default.css'); ?>">
     <style>
         /* Simple template specific styles */
         .simple-header {
@@ -38,7 +38,7 @@
 <body>
     <header class="simple-header">
         <div class="relay-container">
-            <h1><a href="/">Relay</a></h1>
+            <h1><a href="<?php echo url_base('/'); ?>">Relay</a></h1>
         </div>
     </header>
 

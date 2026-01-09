@@ -3,6 +3,11 @@
 # Enable Rewrite Engine
 RewriteEngine On
 
+# Subdirectory Deployment Configuration
+# If deploying to a subdirectory (e.g., /relay/ or /my-cms/), uncomment and set:
+# RewriteBase /relay/
+# For root deployment (/), no RewriteBase is needed.
+
 # Redirect all requests to existing files or directories
 RewriteCond %{REQUEST_FILENAME} !-f
 RewriteCond %{REQUEST_FILENAME} !-d

@@ -12,6 +12,7 @@ require_once __DIR__ . '/lib/content.php';
 require_once __DIR__ . '/lib/csrf.php';
 require_once __DIR__ . '/lib/settings.php';
 require_once __DIR__ . '/lib/theme.php';
+require_once __DIR__ . '/lib/url.php';
 
 // Load theme-specific menu library BEFORE core (allows theme to override)
 theme_load_lib('menu');
@@ -36,7 +37,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         if (auth_login($username, $password)) {
             // Redirect to dashboard or intended page
-            $redirect = $_SESSION['auth_redirect_after_login'] ?? '/admin.php';
+            $redirect = $_SESSION['auth_redirect_after_login'] ?? url_base('/admin.php');
             unset($_SESSION['auth_redirect_after_login']);
             header('Location: ' . $redirect);
             exit;
@@ -142,7 +143,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 // Handle logout
 if ($action === 'logout') {
     auth_logout();
-    header('Location: /admin.php?action=login');
+    header('Location: ' . url_base('/admin.php?action=login'));
     exit;
 }
 
@@ -158,8 +159,8 @@ if ($action !== 'login') {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Relay Admin</title>
-    <link rel="stylesheet" href="/assets/css/relay.css">
-    <link rel="stylesheet" href="/assets/css/admin.css">
+    <link rel="stylesheet" href="<?php echo url_base('/assets/css/relay.css'); ?>">
+    <link rel="stylesheet" href="<?php echo url_base('/assets/css/admin.css'); ?>">
     <?php echo csrf_token_meta(); ?>
 </head>
 <body class="relay-admin">
@@ -174,7 +175,7 @@ if ($action !== 'login') {
                 <div class="relay-message relay-message-error"><?php echo htmlspecialchars($error); ?></div>
             <?php endif; ?>
 
-            <form method="post" action="/admin.php?action=login">
+            <form method="post" action="<?php echo url_base('/admin.php?action=login'); ?>">
                 <div class="relay-form-group">
                     <label for="username">Username</label>
                     <input type="text" id="username" name="username" required autofocus>
@@ -195,9 +196,9 @@ if ($action !== 'login') {
     <header class="relay-admin-header">
         <div class="relay-container">
             <div class="relay-admin-header-content">
-                <h1><a href="/admin.php">Relay Admin</a></h1>
+                <h1><a href="<?php echo url_base('/admin.php'); ?>">Relay Admin</a></h1>
                 <nav class="relay-admin-nav">
-                    <a href="/" target="_blank">View Site</a>
+                    <a href="<?php echo url_base('/'); ?>" target="_blank">View Site</a>
                     <span class="relay-admin-user">
                         <?php
                         $user = auth_get_user();
@@ -207,7 +208,7 @@ if ($action !== 'login') {
     }
     ?>
                     </span>
-                    <a href="/admin.php?action=logout">Log Out</a>
+                    <a href="<?php echo url_base('/admin.php?action=logout'); ?>">Log Out</a>
                 </nav>
             </div>
         </div>
@@ -239,7 +240,7 @@ if ($action !== 'login') {
                             <?php else:
                                 foreach ($menus as $menu_name): ?>
                                     <li>
-                                        <a href="/admin.php?action=edit-menu&menu=<?php echo urlencode($menu_name); ?>">
+                                        <a href="<?php echo url_base('/admin.php?action=edit-menu&menu=' . urlencode($menu_name)); ?>">
                                             <?php echo htmlspecialchars($menu_name); ?>
                                         </a>
                                     </li>
@@ -250,7 +251,7 @@ if ($action !== 'login') {
 
                     <div class="relay-admin-card">
                         <h3>Change Password</h3>
-                        <form method="post" action="/admin.php?action=change-password">
+                        <form method="post" action="<?php echo url_base('/admin.php?action=change-password'); ?>">
                             <?php echo csrf_token_field(); ?>
 
                             <div class="relay-form-group">
@@ -300,7 +301,7 @@ $active_metadata = theme_get_metadata($active_theme);
 ?>
 
                         <?php if (!empty($available_themes)): ?>
-                            <form method="post" action="/admin.php?action=change-theme">
+                            <form method="post" action="<?php echo url_base('/admin.php?action=change-theme'); ?>">
                                 <?php echo csrf_token_field(); ?>
 
                                 <div class="relay-form-group">
@@ -347,7 +348,7 @@ $active_metadata = theme_get_metadata($active_theme);
 
                 <div class="relay-menu-editor-header">
                     <h2>Edit Menu: <?php echo htmlspecialchars($menu_name); ?></h2>
-                    <a href="/admin.php" class="relay-button relay-button-secondary">Back to Dashboard</a>
+                    <a href="<?php echo url_base('/admin.php'); ?>" class="relay-button relay-button-secondary">Back to Dashboard</a>
                 </div>
 
                 <div class="relay-menu-editor">
@@ -381,7 +382,10 @@ $active_metadata = theme_get_metadata($active_theme);
                 </div>
 
                 <input type="hidden" id="menu-name" value="<?php echo htmlspecialchars($menu_name); ?>">
-                <script src="/assets/js/menu-editor.js"></script>
+                <script>
+                    const BASE_PATH = '<?php echo url_get_base_path(); ?>';
+                </script>
+                <script src="<?php echo url_base('/assets/js/menu-editor.js'); ?>"></script>
 
             <?php endif; ?>
         </div>

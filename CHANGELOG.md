@@ -8,6 +8,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- **Subdirectory Deployment Support** - Deploy to any subdirectory with automatic base path detection
+  - New `lib/url.php` library (122 lines) with URL helper functions
+  - `url_get_base_path()` - Auto-detects base path from `$_SERVER['SCRIPT_NAME']`
+  - `url_base($path)` - Prefixes URLs with base path for subdirectory deployments
+  - `url_strip_base_path($path)` - Removes base path from REQUEST_URI for routing
+  - Zero configuration required - automatically detects root vs subdirectory deployment
+  - Updated all URLs across templates, admin interface, menus, and JavaScript
+  - Menu URLs stored without base path (portable), prefixed on render
+  - BASE_PATH JavaScript variable injected in admin.php for AJAX calls
+  - `.htaccess` RewriteBase documentation added for Apache subdirectory deployments
+  - Backward compatible - root deployments continue working unchanged
+  - Works in any subdirectory: `/relay/`, `/cms/`, `/sites/my-cms/`, etc.
+
 - **Multi-Theme System** - Complete support for multiple themes
   - New `themes/` directory with multi-theme architecture
   - `themes/default/` - Default theme with three-column layout
@@ -46,7 +59,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Content: `$metadata`, `$content_html`, `$page_title`, `$current_path`
   - Convenient extractions: `$title`, `$date`, `$author`
   - Menus: `$header_menu`, `$left_menu`, `$right_menu`, `$menu_current_path`
-  - Access to all helper functions: `menu_render()`, `menu_render_header()`
+  - Access to all helper functions: `menu_render()`, `menu_render_header()`, `url_base()`
 
 - **Documentation**
   - `CLAUDE.md` - Context file for Claude Code sessions with complete technical details

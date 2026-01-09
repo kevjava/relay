@@ -1,10 +1,13 @@
+<?php
+require_once __DIR__ . '/lib/url.php';
+?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>404 - Page Not Found - Relay</title>
-    <link rel="stylesheet" href="/assets/css/relay.css">
+    <link rel="stylesheet" href="<?php echo url_base('/assets/css/relay.css'); ?>">
     <style>
         .relay-404 {
             display: flex;
@@ -52,7 +55,7 @@
         <div class="relay-container">
             <div class="relay-header-content">
                 <div class="relay-logo">
-                    <a href="/">Relay</a>
+                    <a href="<?php echo url_base('/'); ?>">Relay</a>
                 </div>
             </div>
         </div>
@@ -66,7 +69,7 @@
                 <p class="relay-404-message">
                     Sorry, the page you're looking for doesn't exist or has been moved.
                 </p>
-                <a href="/" class="relay-404-button">Go to Homepage</a>
+                <a href="<?php echo url_base('/'); ?>" class="relay-404-button">Go to Homepage</a>
             </div>
         </div>
     </main>

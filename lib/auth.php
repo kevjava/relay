@@ -261,13 +261,13 @@ function auth_require_login(string $redirect_url = ''): void {
     if (!auth_check()) {
         // Store intended destination
         if (empty($redirect_url)) {
-            $redirect_url = $_SERVER['REQUEST_URI'] ?? '/admin.php';
+            $redirect_url = $_SERVER['REQUEST_URI'] ?? url_base('/admin.php');
         }
 
         $_SESSION['auth_redirect_after_login'] = $redirect_url;
 
         // Redirect to admin login
-        header('Location: /admin.php?action=login');
+        header('Location: ' . url_base('/admin.php?action=login'));
         exit;
     }
 }

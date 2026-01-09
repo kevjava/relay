@@ -243,6 +243,7 @@ All user input is sanitized following these patterns:
 - **lib/menu.php** (296 lines) - Menu management, nested↔flat conversion
 - **lib/auth.php** (433 lines) - Authentication, sessions, passwords
 - **lib/csrf.php** (88 lines) - CSRF token protection
+- **lib/url.php** (122 lines) - URL helpers, base path detection for subdirectory deployment
 
 ### Templates
 
@@ -284,9 +285,79 @@ Ideas for future development:
 9. **Template caching** - Cache compiled templates for performance
 10. **Drag-and-drop menu editor** - More intuitive menu reordering interface
 
+## Subdirectory Deployment Support
+
+Relay supports deployment to subdirectories (e.g., `/relay/`, `/cms/`, `/sites/my-cms/`) with automatic base path detection.
+
+### How It Works
+
+**Auto-detection**: Base path is automatically detected using `dirname($_SERVER['SCRIPT_NAME'])`:
+- Root deployment: `/index.php` → base path = `""` (empty)
+- Subdirectory: `/relay/index.php` → base path = `"/relay"`
+
+**URL Helper Functions** (`lib/url.php`):
+- `url_get_base_path()` - Returns detected base path (cached)
+- `url_base($path)` - Prefixes path with base path
+- `url_strip_base_path($path)` - Removes base path from REQUEST_URI
+
+### Usage in Code
+
+**Templates**: Always use `url_base()` for URLs:
+```php
+<link rel="stylesheet" href="<?php echo url_base('/assets/css/relay.css'); ?>">
+<a href="<?php echo url_base('/about'); ?>">About</a>
+```
+
+**PHP redirects**:
+```php
+header('Location: ' . url_base('/admin.php'));
+```
+
+**JavaScript**: BASE_PATH variable is injected by admin.php:
+```javascript
+fetch(BASE_PATH + "/admin.php?action=save-menu", { ... })
+```
+
+**Menu rendering**: URLs are stored in JSON without base path (e.g., `/about`), then prefixed automatically when rendered via `menu_render()` and `menu_render_header()`.
+
+### Deployment Steps
+
+**For subdirectory deployment**:
+1. Upload files to subdirectory
+2. Edit `.htaccess` and uncomment/set `RewriteBase`:
+   ```apache
+   RewriteBase /relay/
+   ```
+3. Done - all URLs adjust automatically
+
+**For root deployment**: No changes needed, works immediately.
+
+### Files Modified for Subdirectory Support
+
+- `lib/url.php` - NEW: URL helper functions
+- `index.php` - Routing strips base path
+- `admin.php` - All URLs use url_base(), BASE_PATH injected
+- `lib/auth.php` - Redirects use url_base()
+- `lib/menu.php` - Menu rendering prefixes URLs
+- `error-404.php` - All URLs use url_base()
+- All 4 template files - Asset/navigation URLs use url_base()
+- `assets/js/menu-editor.js` - AJAX uses BASE_PATH
+- `.htaccess` - RewriteBase documentation added
+
 ## Development Context
 
-### Last Session Summary (December 18, 2024)
+### Last Session Summary (January 9, 2026)
+
+- **Implemented subdirectory deployment support with auto-detection**
+- Created `lib/url.php` with base path detection and URL helpers
+- Updated all URLs across templates, admin, menus, and JavaScript
+- Added `.htaccess` RewriteBase documentation
+- Updated README.md with deployment instructions
+- Backward compatible: root deployments unchanged
+- Zero configuration required: automatic base path detection
+- Menu JSON files remain portable (no base path in storage)
+
+### Previous Session Summary (December 18, 2024)
 
 - Implemented complete theme system with template support
 - Refactored index.php to use templates instead of hardcoded HTML
@@ -309,6 +380,7 @@ Ideas for future development:
 - Admin interface works standalone without themes
 - Two built-in themes (default, uswds) with extensible theme system
 - Theme selection via `settings.json` with `active_theme` field
+- **Subdirectory deployment support with automatic base path detection**
 - File permissions configured correctly for Apache
 - Complete documentation for developers and Claude Code sessions
 

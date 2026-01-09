@@ -184,7 +184,7 @@ function menu_render(array $menu_data, string $current_path = '', int $depth = 0
         $class_attr = implode(' ', $classes);
 
         $html .= '<li class="' . $class_attr . '">';
-        $html .= '<a href="' . $url . '">' . $label . '</a>';
+        $html .= '<a href="' . url_base($item['url']) . '">' . $label . '</a>';
 
         // Render children if present
         if ($has_children) {
@@ -225,7 +225,7 @@ function menu_render_header(array $menu_data, string $current_path = ''): string
 
         $class = $is_active ? ' class="active"' : '';
 
-        $html .= '<li' . $class . '><a href="' . $url . '">' . $label . '</a></li>';
+        $html .= '<li' . $class . '><a href="' . url_base($item['url']) . '">' . $label . '</a></li>';
     }
 
     $html .= '</ul></nav>';
