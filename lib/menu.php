@@ -61,8 +61,19 @@ function menu_save(string $menu_name, array $menu_data): bool {
         }
     }
 
-    $json = json_encode($menu_data, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES);
-    $result = @file_put_contents($file_path, $json, LOCK_EX);
+    try {
+        set_error_handler(static function($severity, $message, $file, $line) {
+            throw new ErrorException($message, 0, $severity, $file, $line);
+        });
+
+        $json = json_encode($menu_data, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES);
+        $result = file_put_contents($file_path, $json, LOCK_EX);
+    } catch (ErrorException $e) {
+        error_log("Relay CMS: Failed to write menu file: {$file_path} ({$e->getMessage()})");
+        return false;
+    } finally {
+        restore_error_handler();
+    }
 
     if ($result === false) {
         error_log("Relay CMS: Failed to write menu file: " . $file_path);
