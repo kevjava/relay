@@ -1,16 +1,22 @@
 [
-  {
-    "label": "Documentation",
-    "url": "#",
-    "children": [
-      {
-        "label": "Getting Started",
-        "url": "/getting-started"
-      },
-      {
-        "label": "About",
-        "url": "/about"
-      }
-    ]
-  }
+    {
+        "label": "Documentation",
+        "url": "#",
+        "children": [
+            {
+                "label": "Getting Started",
+                "url": "/getting-started"
+            },
+            {
+                "label": "About",
+                "url": "/about",
+                "children": [
+                    {
+                        "label": "Double-nested",
+                        "url": "/simple"
+                    }
+                ]
+            }
+        ]
+    }
 ]

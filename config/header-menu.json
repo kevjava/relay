@@ -9,6 +9,12 @@
     },
     {
         "label": "Getting Started",
-        "url": "/getting-started"
+        "url": "/getting-started",
+        "children": [
+            {
+                "label": "Nested",
+                "url": "#"
+            }
+        ]
     }
 ]
