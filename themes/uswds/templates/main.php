@@ -26,7 +26,7 @@
                         <a href="/" title="Home">Relay</a>
                     </em>
                 </div>
-                <button type="button" class="usa-menu-button">Menu</button>
+                <button type="button" class="usa-menu-btn">Menu</button>
             </div>
 
             <?php if (!empty($header_menu)): ?>
