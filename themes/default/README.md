@@ -36,11 +36,11 @@ If no `template` field is specified, the `main` template is used by default.
 
 ### Template Files
 
-Templates are HTML files located in `theme/templates/` with a `.html` extension. They can include PHP blocks for dynamic content.
+Templates are HTML files located in `theme/templates/` with a `.php` extension. They can include PHP blocks for dynamic content.
 
 **Example:**
 
-```html
+```php
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -58,25 +58,31 @@ Templates are HTML files located in `theme/templates/` with a `.html` extension.
 All templates have access to the following variables:
 
 ### Content Variables
+
 - `$metadata` - Array of all frontmatter fields from the markdown file
 - `$content_html` - Rendered HTML from markdown content
 - `$page_title` - Page title (from metadata or default)
 - `$current_path` - Current content path (e.g., "about", "getting-started")
 
 ### Convenient Extractions
+
 These are extracted from `$metadata` for easier access:
+
 - `$title` - Page title (same as `$metadata['title']`)
 - `$date` - Publication date (same as `$metadata['date']`)
 - `$author` - Author name (same as `$metadata['author']`)
 
 ### Menu Variables
+
 - `$header_menu` - Header menu array
 - `$left_menu` - Left sidebar menu array
 - `$right_menu` - Right sidebar menu array
 - `$menu_current_path` - Current path for menu highlighting (e.g., "/about")
 
 ### Helper Functions
+
 Templates have access to all PHP functions including:
+
 - `menu_render($menu_data, $current_path, $depth)` - Render sidebar menu
 - `menu_render_header($menu_data, $current_path)` - Render header menu
 - `htmlspecialchars($string, ENT_QUOTES, 'UTF-8')` - Escape HTML
@@ -96,7 +102,7 @@ chmod 644 theme/templates/my-template.html
 
 ### Step 2: Write Template HTML
 
-```html
+```php
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -148,7 +154,7 @@ Page content here.
 
 ### Accessing Custom Metadata
 
-```html
+```php
 <!-- In your markdown: -->
 ---
 title: Project Showcase
@@ -168,7 +174,7 @@ category: Portfolio
 
 ### Conditional Sidebar Display
 
-```html
+```php
 <div class="container">
     <?php if (!empty($left_menu)): ?>
         <aside class="sidebar">
@@ -184,7 +190,7 @@ category: Portfolio
 
 ### Different Layouts by Content Type
 
-```html
+```php
 <?php
 // Determine layout based on metadata
 $layout = $metadata['layout'] ?? 'default';
@@ -205,9 +211,10 @@ $layout = $metadata['layout'] ?? 'default';
 
 ## Built-in Templates
 
-### main.html (Default)
+### main.php (Default)
 
 Three-column responsive layout with:
+
 - Full-width header with site title and horizontal menu
 - Optional left sidebar for navigation
 - Center content area
@@ -215,6 +222,7 @@ Three-column responsive layout with:
 - Full-width footer
 
 **Grid system:**
+
 - Three columns when both sidebars present: `250px | 1fr | 250px`
 - Two columns with left sidebar: `250px | 1fr`
 - Two columns with right sidebar: `1fr | 250px`
@@ -222,6 +230,7 @@ Three-column responsive layout with:
 
 **Usage:**
 Default template - no frontmatter needed, or explicitly:
+
 ```markdown
 ---
 template: main
@@ -231,12 +240,14 @@ template: main
 ### simple.html
 
 Minimal layout with:
+
 - Simple header with site name
 - Single-column content area
 - Basic footer
 - No sidebars or navigation menus
 
 **Usage:**
+
 ```markdown
 ---
 template: simple
@@ -248,12 +259,14 @@ template: simple
 ### Security
 
 1. **Always escape user content:**
+
    ```html
    <?php echo htmlspecialchars($title, ENT_QUOTES, 'UTF-8'); ?>
    ```
 
 2. **Content HTML is already safe:**
    Markdown is rendered by ParsedownExtra and can be output directly:
+
    ```html
    <?php echo $content_html; ?>
    ```
@@ -275,8 +288,21 @@ template: simple
 ### Maintainability
 
 1. **Use semantic HTML:**
+
    ```html
-   <article>, <aside>, <nav>, <header>, <footer>
+   <article>
+     ,
+     <aside>
+       ,
+       <nav>
+         ,
+         <header>
+           ,
+           <footer></footer>
+         </header>
+       </nav>
+     </aside>
+   </article>
    ```
 
 2. **Keep templates DRY:**
@@ -292,6 +318,7 @@ template: simple
 **Error:** "Template system error: main template not found"
 
 **Solutions:**
+
 - Verify file exists: `ls -la theme/templates/main.html`
 - Check permissions: Should be `644` (rw-r--r--)
 - Ensure filename matches exactly (case-sensitive)
@@ -301,6 +328,7 @@ template: simple
 **Error:** Parse error or syntax error
 
 **Solutions:**
+
 - Check PHP syntax: `php -l theme/templates/your-template.html`
 - Ensure all `<?php` tags are properly closed with `?>`
 - Check for unmatched quotes or brackets
@@ -310,13 +338,17 @@ template: simple
 **Error:** Undefined variable in template
 
 **Solutions:**
+
 - Always check if variable is set before using:
+
   ```php
   <?php if (isset($variable)): ?>
       <?php echo $variable; ?>
   <?php endif; ?>
   ```
+
 - Use null coalescing operator:
+
   ```php
   <?php echo $metadata['field'] ?? 'default'; ?>
   ```
@@ -324,6 +356,7 @@ template: simple
 ### CSS/JS not loading
 
 **Solutions:**
+
 - Use absolute paths: `/assets/css/style.css`
 - Or use relative paths from root: `href="/theme/css/theme.css"`
 - Check file permissions: Should be `644`
@@ -370,7 +403,10 @@ function theme_asset_url(string $path): string {
 Then use in templates:
 
 ```html
-<link rel="stylesheet" href="<?php echo theme_asset_url('css/custom.css'); ?>">
+<link
+  rel="stylesheet"
+  href="<?php echo theme_asset_url('css/custom.css'); ?>"
+/>
 ```
 
 ## File Permissions
