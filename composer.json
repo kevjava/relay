@@ -12,8 +12,7 @@
         "files": [
             "lib/auth.php",
             "lib/csrf.php",
-            "lib/content.php",
-            "lib/menu.php"
+            "lib/content.php"
         ]
     },
     "config": {
