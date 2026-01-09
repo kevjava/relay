@@ -13,6 +13,12 @@
     return meta ? meta.getAttribute("content") : "";
   }
 
+  // Get base path for URL construction
+  function getBasePath() {
+    const input = document.getElementById('base-path');
+    return input ? input.value : "";
+  }
+
   // Get all menu items
   function getMenuItems() {
     return Array.from(document.querySelectorAll(".relay-menu-item"));
@@ -208,7 +214,8 @@
     formData.append("menu_name", menuName);
     formData.append("menu_data", JSON.stringify(menuData));
 
-    fetch(BASE_PATH + "/admin.php?action=save-menu", {
+    const basePath = getBasePath();
+    fetch(basePath + "/admin.php?action=save-menu", {
       body: formData,
       method: "POST",
     })
