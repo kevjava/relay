@@ -55,11 +55,21 @@ function menu_save(string $menu_name, array $menu_data): bool {
 
     // Create directory if it doesn't exist
     if (!is_dir(RELAY_MENU_DIR)) {
-        mkdir(RELAY_MENU_DIR, 0755, true);
+        if (!@mkdir(RELAY_MENU_DIR, 0755, true)) {
+            error_log("Relay CMS: Failed to create menu directory: " . RELAY_MENU_DIR);
+            return false;
+        }
     }
 
     $json = json_encode($menu_data, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES);
-    return file_put_contents($file_path, $json, LOCK_EX) !== false;
+    $result = @file_put_contents($file_path, $json, LOCK_EX);
+
+    if ($result === false) {
+        error_log("Relay CMS: Failed to write menu file: " . $file_path);
+        return false;
+    }
+
+    return true;
 }
 
 /**

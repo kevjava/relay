@@ -99,6 +99,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if ($action === 'save-menu') {
         auth_require_login();
 
+        // Disable HTML error output to prevent JSON corruption
+        ini_set('display_errors', '0');
+        ini_set('html_errors', '0');
+        error_reporting(E_ALL);
+
         // Clean any output buffers and start fresh to prevent corrupted JSON
         while (ob_get_level()) {
             ob_end_clean();
