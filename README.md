@@ -14,6 +14,7 @@ Relay is a minimal, secure PHP-based content management system designed for gove
 - **Responsive layouts**: Three-column grid that adapts to content
 - **Simple admin interface**: Easy menu editing with intuitive controls
 - **File-based user management**: CLI tools for user administration
+- **Flexible deployment**: Supports root or subdirectory deployment with auto-detection
 - **Docker-ready**: Simple Docker setup for development and deployment
 
 ## Requirements
@@ -147,8 +148,8 @@ chmod 644 themes/default/templates/my-template.php
 <html lang="en">
 <head>
     <title><?php echo htmlspecialchars($page_title, ENT_QUOTES, 'UTF-8'); ?></title>
-    <link rel="stylesheet" href="/assets/css/relay.css">
-    <link rel="stylesheet" href="/themes/default/css/default.css">
+    <link rel="stylesheet" href="<?php echo url_base('/assets/css/relay.css'); ?>">
+    <link rel="stylesheet" href="<?php echo url_base('/themes/default/css/default.css'); ?>">
 </head>
 <body>
     <h1><?php echo htmlspecialchars($title, ENT_QUOTES, 'UTF-8'); ?></h1>
@@ -168,7 +169,13 @@ Templates have access to:
 - `$page_title` - The page title
 - `$header_menu`, `$left_menu`, `$right_menu` - Navigation menus
 - `$current_path`, `$menu_current_path` - Current page path
-- Helper functions: `menu_render()`, `menu_render_header()`
+- Helper functions: `menu_render()`, `menu_render_header()`, `url_base()`
+
+**Important**: Always use `url_base()` for all URLs in templates to support subdirectory deployments:
+```php
+<link rel="stylesheet" href="<?php echo url_base('/assets/css/style.css'); ?>">
+<a href="<?php echo url_base('/about'); ?>">About</a>
+```
 
 ### Theme Selection
 
@@ -256,6 +263,53 @@ php admin-tools.php help
 
 ## Deployment
 
+### Subdirectory Deployment
+
+Relay supports deployment to subdirectories (e.g., `/relay/`, `/cms/`, `/sites/my-cms/`) with automatic base path detection. No code changes are required.
+
+#### For Root Deployment (`/`)
+
+Deploy as normal - Relay automatically detects root deployment and works immediately.
+
+#### For Subdirectory Deployment (e.g., `/relay/`)
+
+1. **Upload files** to your subdirectory (e.g., `/var/www/html/relay/`)
+
+2. **Edit `.htaccess`** - Uncomment and set the `RewriteBase` directive:
+
+```apache
+# Subdirectory Deployment Configuration
+# If deploying to a subdirectory (e.g., /relay/ or /my-cms/), uncomment and set:
+RewriteBase /relay/
+```
+
+3. **Done!** - All URLs automatically adjust to include the base path.
+
+#### How It Works
+
+- Base path is automatically detected from server environment
+- All URLs (assets, links, forms, redirects) adjust automatically
+- Menu configurations remain portable (stored without base path)
+- Works in any subdirectory without code changes
+- Backward compatible with root deployments
+
+#### nginx Subdirectory Configuration
+
+For nginx deployments in subdirectories, update your location block:
+
+```nginx
+location /relay/ {
+    alias /var/www/html/relay/;
+    try_files $uri $uri/ /relay/index.php?p=$uri&$args;
+
+    location ~ \.php$ {
+        fastcgi_pass unix:/var/run/php/php8.2-fpm.sock;
+        fastcgi_param SCRIPT_FILENAME $request_filename;
+        include fastcgi_params;
+    }
+}
+```
+
 ### Deployment Checklist
 
 - [ ] Change default admin credentials
@@ -268,6 +322,7 @@ php admin-tools.php help
 - [ ] Configure monitoring/logging
 - [ ] Test password reset functionality
 - [ ] Verify rate limiting is working
+- [ ] If subdirectory deployment: Set RewriteBase in .htaccess
 
 ### Production Docker Setup
 
@@ -353,6 +408,7 @@ server {
 **Problem**: 404 on all pages
 - Verify .htaccess is being read (AllowOverride All)
 - Check mod_rewrite is enabled
+- For subdirectory deployment: Ensure RewriteBase is set in .htaccess
 - For nginx: verify rewrite rules are configured
 
 ### Debug Mode
@@ -387,7 +443,8 @@ error_reporting(E_ALL);
 │   ├── content.php        # Content management
 │   ├── menu.php           # Menu system
 │   ├── csrf.php           # CSRF protection
-│   └── theme.php          # Template rendering
+│   ├── theme.php          # Template rendering
+│   └── url.php            # URL helpers & base path detection
 ├── content/               # Markdown content files
 ├── config/                # JSON configuration
 │   ├── users.json         # User credentials
