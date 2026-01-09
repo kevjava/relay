@@ -296,3 +296,33 @@ function theme_set_active(string $theme_name): bool {
     require_once __DIR__ . '/settings.php';
     return settings_set('active_theme', $theme_name);
 }
+
+/**
+ * Load theme-specific library file if it exists
+ *
+ * Allows themes to override core library functions by providing
+ * their own implementations in themes/{theme}/lib/{library}.php
+ *
+ * Example: A theme can override menu_render() by creating
+ * themes/my-theme/lib/menu.php and defining the function there.
+ *
+ * @param string $library Library name (e.g., 'menu', 'content')
+ * @return bool True if theme library was loaded, false otherwise
+ */
+function theme_load_lib(string $library): bool {
+    // Sanitize library name (alphanumeric, dash, underscore only)
+    if (!preg_match('/^[a-zA-Z0-9_-]+$/', $library)) {
+        return false;
+    }
+
+    $theme_dir = theme_get_active_dir();
+    $lib_file = $theme_dir . '/lib/' . $library . '.php';
+
+    // Check if theme-specific library exists
+    if (file_exists($lib_file)) {
+        require_once $lib_file;
+        return true;
+    }
+
+    return false;
+}

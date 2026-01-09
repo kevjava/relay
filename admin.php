@@ -9,10 +9,15 @@
 require_once __DIR__ . '/vendor/autoload.php';
 require_once __DIR__ . '/lib/auth.php';
 require_once __DIR__ . '/lib/content.php';
-require_once __DIR__ . '/lib/menu.php';
 require_once __DIR__ . '/lib/csrf.php';
 require_once __DIR__ . '/lib/settings.php';
 require_once __DIR__ . '/lib/theme.php';
+
+// Load theme-specific menu library BEFORE core (allows theme to override)
+theme_load_lib('menu');
+
+// Load core menu library (only defines functions if not already defined by theme)
+require_once __DIR__ . '/lib/menu.php';
 
 // Start session
 auth_init_session();
@@ -285,9 +290,9 @@ foreach ($users as $username => $user_data): ?>
 
                         <?php
                         $available_themes = theme_list_available();
-                        $active_theme = theme_get_active();
-                        $active_metadata = theme_get_metadata($active_theme);
-                        ?>
+$active_theme = theme_get_active();
+$active_metadata = theme_get_metadata($active_theme);
+?>
 
                         <?php if (!empty($available_themes)): ?>
                             <form method="post" action="/admin.php?action=change-theme">
@@ -299,7 +304,7 @@ foreach ($users as $username => $user_data): ?>
                                         <?php foreach ($available_themes as $theme_name):
                                             $metadata = theme_get_metadata($theme_name);
                                             $selected = ($theme_name === $active_theme) ? 'selected' : '';
-                                        ?>
+                                            ?>
                                             <option value="<?php echo htmlspecialchars($theme_name); ?>" <?php echo $selected; ?>>
                                                 <?php echo htmlspecialchars($metadata['name'] ?? $theme_name); ?>
                                                 <?php if (isset($metadata['version'])): ?>

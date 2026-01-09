@@ -128,11 +128,15 @@ function menu_is_active(string $url, string $current_path): bool {
 /**
  * Render a menu as HTML
  *
+ * Themes can override this function by defining it in themes/{theme}/lib/menu.php.
+ * This default implementation provides basic nested list markup.
+ *
  * @param array $menu_data Menu data
  * @param string $current_path Current page path
  * @param int $depth Current nesting depth (for CSS classes)
  * @return string HTML output
  */
+if (!function_exists('menu_render')) {
 function menu_render(array $menu_data, string $current_path = '', int $depth = 0): string {
     if (empty($menu_data)) {
         return '';
@@ -173,14 +177,19 @@ function menu_render(array $menu_data, string $current_path = '', int $depth = 0
 
     return $html;
 }
+}
 
 /**
  * Render a simple header menu (horizontal navigation)
+ *
+ * Themes can override this function by defining it in themes/{theme}/lib/menu.php.
+ * This default implementation provides a simple horizontal nav.
  *
  * @param array $menu_data Menu data
  * @param string $current_path Current page path
  * @return string HTML output
  */
+if (!function_exists('menu_render_header')) {
 function menu_render_header(array $menu_data, string $current_path = ''): string {
     if (empty($menu_data)) {
         return '';
@@ -201,6 +210,7 @@ function menu_render_header(array $menu_data, string $current_path = ''): string
     $html .= '</ul></nav>';
 
     return $html;
+}
 }
 
 /**

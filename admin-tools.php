@@ -14,6 +14,12 @@ if (php_sapi_name() !== 'cli') {
 // Load libraries
 require_once __DIR__ . '/vendor/autoload.php';
 require_once __DIR__ . '/lib/auth.php';
+require_once __DIR__ . '/lib/theme.php';
+
+// Load theme-specific menu library BEFORE core (allows theme to override)
+theme_load_lib('menu');
+
+// Load core menu library (only defines functions if not already defined by theme)
 require_once __DIR__ . '/lib/menu.php';
 
 // Display banner
