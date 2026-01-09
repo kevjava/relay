@@ -208,7 +208,7 @@
     formData.append("menu_name", menuName);
     formData.append("menu_data", JSON.stringify(menuData));
 
-    fetch("/admin.php?action=save-menu", {
+    fetch(BASE_PATH + "/admin.php?action=save-menu", {
       body: formData,
       method: "POST",
     })

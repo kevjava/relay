@@ -5,8 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="generator" content="Relay CMS">
     <title><?php echo htmlspecialchars($page_title, ENT_QUOTES, 'UTF-8'); ?> - Relay</title>
-    <link rel="stylesheet" href="/assets/css/relay.css">
-    <link rel="stylesheet" href="/themes/default/css/default.css">
+    <link rel="stylesheet" href="<?php echo url_base('/assets/css/relay.css'); ?>">
+    <link rel="stylesheet" href="<?php echo url_base('/themes/default/css/default.css'); ?>">
 </head>
 <body>
     <!-- Full-width Header -->
@@ -14,7 +14,7 @@
         <div class="relay-container">
             <div class="relay-header-content">
                 <div class="relay-logo">
-                    <a href="/">Relay</a>
+                    <a href="<?php echo url_base('/'); ?>">Relay</a>
                 </div>
                 <?php if (!empty($header_menu)): ?>
                     <?php echo menu_render_header($header_menu, $menu_current_path); ?>

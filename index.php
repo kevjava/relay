@@ -11,6 +11,7 @@ require_once __DIR__ . '/lib/auth.php';
 require_once __DIR__ . '/lib/content.php';
 require_once __DIR__ . '/lib/csrf.php';
 require_once __DIR__ . '/lib/theme.php';
+require_once __DIR__ . '/lib/url.php';
 
 // Load theme-specific menu library BEFORE core (allows theme to override)
 theme_load_lib('menu');
@@ -28,6 +29,8 @@ if (isset($_GET['p'])) {
     $request_path = $_GET['p'];
 } elseif (isset($_SERVER['REQUEST_URI'])) {
     $request_path = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
+    // Strip base path for subdirectory deployment
+    $request_path = url_strip_base_path($request_path);
     // Remove leading slash
     $request_path = ltrim($request_path, '/');
 }

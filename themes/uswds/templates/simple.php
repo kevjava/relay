@@ -7,10 +7,10 @@
     <title><?php echo htmlspecialchars($page_title, ENT_QUOTES, 'UTF-8'); ?> - Relay</title>
 
     <!-- U.S. Web Design System CSS (local) -->
-    <link rel="stylesheet" href="/themes/uswds/css/uswds.min.css">
+    <link rel="stylesheet" href="<?php echo url_base('/themes/uswds/css/uswds.min.css'); ?>">
 
     <!-- Custom theme CSS -->
-    <link rel="stylesheet" href="/themes/uswds/css/theme.css">
+    <link rel="stylesheet" href="<?php echo url_base('/themes/uswds/css/theme.css'); ?>">
 </head>
 <body>
     <!-- Skip Navigation -->
@@ -22,7 +22,7 @@
             <div class="usa-navbar">
                 <div class="usa-logo">
                     <em class="usa-logo__text">
-                        <a href="/" title="Home">Relay</a>
+                        <a href="<?php echo url_base('/'); ?>" title="Home">Relay</a>
                     </em>
                 </div>
             </div>
@@ -80,6 +80,6 @@
     </footer>
 
     <!-- U.S. Web Design System JS (local) -->
-    <script src="/themes/uswds/js/uswds.min.js"></script>
+    <script src="<?php echo url_base('/themes/uswds/js/uswds.min.js'); ?>"></script>
 </body>
 </html>
