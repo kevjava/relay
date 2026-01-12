@@ -30,7 +30,7 @@ Relay is a minimal, secure PHP-based content management system designed for gove
 
 ```bash
 # Clone the repository
-git clone https://github.com/yourorg/relay.git
+git clone https://github.com/kevjava/relay.git
 cd relay
 
 # Install dependencies
@@ -503,7 +503,7 @@ MIT License - see LICENSE file for details
 ## Support
 
 For issues, questions, or contributions, please visit:
-https://github.com/yourorg/relay/issues
+https://github.com/kevjava/relay/issues
 
 ---
 
