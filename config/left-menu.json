@@ -9,13 +9,7 @@
             },
             {
                 "label": "About",
-                "url": "/about",
-                "children": [
-                    {
-                        "label": "Double-nested",
-                        "url": "/simple"
-                    }
-                ]
+                "url": "/about"
             }
         ]
     }

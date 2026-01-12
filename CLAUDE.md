@@ -182,6 +182,49 @@ All user input is sanitized following these patterns:
 - No sandboxing - templates need access to helper functions
 - Template names heavily sanitized before file inclusion
 
+### Content Organization Patterns
+
+**Flat Structure (Original):**
+```
+content/
+├── index.md
+├── about.md
+├── getting-started.md
+└── contact.md
+```
+
+**Hierarchical Structure (Supported):**
+```
+content/
+├── index.md
+├── about/
+│   ├── index.md       # Served at /about
+│   ├── team.md        # Served at /about/team
+│   └── mission.md     # Served at /about/mission
+└── docs/
+    ├── index.md       # Served at /docs
+    └── api/
+        └── index.md   # Served at /docs/api
+```
+
+**Mixed Structure (Supported):**
+```
+content/
+├── index.md           # /
+├── about.md           # /about (flat file takes precedence)
+├── team/
+│   └── index.md       # /team (directory index)
+└── docs/
+    ├── index.md       # /docs
+    └── getting-started.md  # /docs/getting-started
+```
+
+**Path Resolution Rules:**
+- URL `/about/` tries `content/about.md` first, then `content/about/index.md`
+- If both exist, direct file (`about.md`) takes precedence
+- Trailing slashes normalized during sanitization
+- All paths subject to same security validation
+
 ## Common Operations
 
 ### Adding a new template

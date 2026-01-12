@@ -63,8 +63,13 @@ function content_sanitize_path(string $path): string|false {
 /**
  * Get the full filesystem path for a content file
  *
+ * Supports both flat and hierarchical content structures with automatic fallback:
+ * 1. First tries direct file path (e.g., content/about.md)
+ * 2. Then tries directory index path (e.g., content/about/index.md)
+ * 3. Returns first match found, or false if neither exists
+ *
  * @param string $path Sanitized content path
- * @return string|false Full filesystem path or false if invalid
+ * @return string|false Full filesystem path or false if invalid or not found
  */
 function content_get_file_path(string $path): string|false {
     $sanitized = content_sanitize_path($path);
@@ -73,25 +78,39 @@ function content_get_file_path(string $path): string|false {
         return false;
     }
 
-    // Build file path
-    $file_path = RELAY_CONTENT_DIR . '/' . $sanitized . '.md';
-
-    // Resolve real path
-    $real_path = realpath($file_path);
-
-    // If file doesn't exist, realpath returns false
-    if ($real_path === false) {
-        return false;
-    }
-
-    // Verify the resolved path is within content directory
+    // Get the real content directory path for security checks
     $content_dir_real = realpath(RELAY_CONTENT_DIR);
 
-    if (strpos($real_path, $content_dir_real) !== 0) {
-        return false;
+    if ($content_dir_real === false) {
+        return false; // Content directory doesn't exist
     }
 
-    return $real_path;
+    // STAGE 1: Try direct file path first (e.g., content/about.md)
+    // This maintains backward compatibility - existing flat files take precedence
+    $direct_file_path = RELAY_CONTENT_DIR . '/' . $sanitized . '.md';
+    $direct_real_path = realpath($direct_file_path);
+
+    if ($direct_real_path !== false) {
+        // Verify the resolved path is within content directory
+        if (strpos($direct_real_path, $content_dir_real) === 0) {
+            return $direct_real_path;
+        }
+    }
+
+    // STAGE 2: Try directory index path (e.g., content/about/index.md)
+    // This enables hierarchical content organization
+    $index_file_path = RELAY_CONTENT_DIR . '/' . $sanitized . '/index.md';
+    $index_real_path = realpath($index_file_path);
+
+    if ($index_real_path !== false) {
+        // Verify the resolved path is within content directory
+        if (strpos($index_real_path, $content_dir_real) === 0) {
+            return $index_real_path;
+        }
+    }
+
+    // Neither path found or both failed security check
+    return false;
 }
 
 /**

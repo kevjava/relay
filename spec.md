@@ -154,9 +154,18 @@ author: Kevin
 
 **Path Mapping:**
 
-- `/relay/` → `/content/index.md`
-- `/relay/about` → `/content/about.md`
-- `/relay/section/page` → `/content/section/page.md`
+Relay supports both flat and hierarchical content structures with automatic fallback:
+
+- `/relay/` → `content/index.md`
+- `/relay/about` → `content/about.md` (if exists), else `content/about/index.md`
+- `/relay/about/team` → `content/about/team.md` (if exists), else `content/about/team/index.md`
+
+**Fallback Priority:**
+1. Direct file path is always tried first (e.g., `content/about.md`)
+2. Directory index path is tried second (e.g., `content/about/index.md`)
+3. First match found is served; 404 returned if neither exists
+
+**Precedence:** If both `content/about.md` AND `content/about/index.md` exist, the direct file takes precedence. This ensures backward compatibility and predictable behavior.
 
 **Security:**
 
