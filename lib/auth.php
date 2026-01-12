@@ -191,19 +191,29 @@ function auth_login(string $username, string $password): bool {
 /**
  * Log out the current user
  */
-function auth_logout(): void {
+function auth_logout(bool $expired = false): void {
     auth_init_session();
 
     // Clear all session data
     $_SESSION = [];
+
+    // Restore expiry indicator if this was a timeout
+    if ($expired) {
+        $_SESSION['auth_session_expired'] = true;
+        $_SESSION['auth_session_expired_time'] = time();
+    }
 
     // Delete the session cookie
     if (isset($_COOKIE[session_name()])) {
         setcookie(session_name(), '', time() - 3600, '/');
     }
 
-    // Destroy the session
-    session_destroy();
+    // Destroy or regenerate session
+    if ($expired) {
+        session_regenerate_id(true);
+    } else {
+        session_destroy();
+    }
 }
 
 /**
@@ -224,7 +234,7 @@ function auth_check(): bool {
         $inactive_time = time() - $_SESSION['user_last_activity'];
 
         if ($inactive_time > RELAY_SESSION_TIMEOUT) {
-            auth_logout();
+            auth_logout(true); // Pass true to indicate session expiry
             return false;
         }
     }
@@ -259,6 +269,16 @@ function auth_get_user(): ?array {
  */
 function auth_require_login(string $redirect_url = ''): void {
     if (!auth_check()) {
+        // Check if session just expired
+        if (isset($_SESSION['auth_session_expired']) && $_SESSION['auth_session_expired'] === true) {
+            auth_set_flash_message(
+                'Your session has expired due to inactivity. Please log in again.',
+                'warning'
+            );
+            unset($_SESSION['auth_session_expired']);
+            unset($_SESSION['auth_session_expired_time']);
+        }
+
         // Store intended destination
         if (empty($redirect_url)) {
             $redirect_url = $_SERVER['REQUEST_URI'] ?? url_base('/admin.php');
@@ -430,4 +450,55 @@ function auth_reset_password(string $username, string $new_password): bool {
 
     // Save users
     return auth_save_users($users);
+}
+
+/**
+ * Set a flash message to be displayed after redirect
+ *
+ * @param string $message Message text
+ * @param string $type Message type: 'error', 'warning', 'success', 'info'
+ */
+function auth_set_flash_message(string $message, string $type = 'error'): void {
+    auth_init_session();
+    $_SESSION['auth_flash_message'] = [
+        'message' => $message,
+        'type' => $type,
+        'timestamp' => time()
+    ];
+}
+
+/**
+ * Get and clear the current flash message
+ *
+ * @return array|null Flash message array with 'message' and 'type', or null
+ */
+function auth_get_flash_message(): ?array {
+    auth_init_session();
+
+    if (!isset($_SESSION['auth_flash_message'])) {
+        return null;
+    }
+
+    $flash = $_SESSION['auth_flash_message'];
+    unset($_SESSION['auth_flash_message']);
+
+    // Expire flash messages older than 5 minutes
+    if (isset($flash['timestamp']) && (time() - $flash['timestamp']) > 300) {
+        return null;
+    }
+
+    return [
+        'message' => $flash['message'],
+        'type' => $flash['type']
+    ];
+}
+
+/**
+ * Check if flash message exists without clearing it
+ *
+ * @return bool True if flash message exists
+ */
+function auth_has_flash_message(): bool {
+    auth_init_session();
+    return isset($_SESSION['auth_flash_message']);
 }
