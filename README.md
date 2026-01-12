@@ -7,6 +7,7 @@ Relay is a minimal, secure PHP-based content management system designed for gove
 ## Features
 
 - **Markdown-based content**: Write in simple Markdown with YAML frontmatter
+- **Flexible content organization**: Supports both flat files and hierarchical directories with automatic fallback
 - **Theme system**: Flexible HTML templates with PHP for custom layouts
 - **No database required**: All data stored in JSON and Markdown files
 - **Secure by default**: CSRF protection, rate limiting, secure password hashing
@@ -87,14 +88,78 @@ This is my content written in **Markdown**.
 
 ### Content Organization
 
-- **Flat structure**: `content/about.md` → `/about`
-- **Nested structure**: `content/docs/guide.md` → `/docs/guide`
-- **Homepage**: `content/index.md` → `/`
+Relay supports both flat and hierarchical content structures with automatic fallback, giving you flexibility in how you organize your content.
+
+#### Flat Structure (Simple)
+
+The traditional approach where each page is a single file:
+
+```
+content/
+├── index.md         # Homepage at /
+├── about.md         # About page at /about
+├── contact.md       # Contact page at /contact
+└── services.md      # Services page at /services
+```
+
+- `content/about.md` → `/about`
+- `content/services.md` → `/services`
+
+#### Hierarchical Structure (Organized)
+
+Group related content in subdirectories using `index.md` files:
+
+```
+content/
+├── index.md                    # Homepage at /
+├── about/
+│   ├── index.md               # About page at /about
+│   ├── team.md                # Team page at /about/team
+│   └── mission.md             # Mission page at /about/mission
+└── docs/
+    ├── index.md               # Docs home at /docs
+    ├── getting-started.md     # Guide at /docs/getting-started
+    └── api/
+        └── index.md           # API docs at /docs/api
+```
+
+- `content/about/index.md` → `/about`
+- `content/about/team.md` → `/about/team`
+- `content/docs/api/index.md` → `/docs/api`
+
+#### Mixed Structure (Flexible)
+
+You can mix both approaches in the same site:
+
+```
+content/
+├── index.md         # Homepage (flat)
+├── about.md         # About page (flat)
+├── docs/
+│   ├── index.md    # Docs section (hierarchical)
+│   └── guide.md
+└── blog/
+    └── index.md     # Blog section (hierarchical)
+```
+
+#### How Fallback Works
+
+When you request a URL like `/about`, Relay tries to find the content in this order:
+
+1. **Direct file first**: `content/about.md`
+2. **Directory index second**: `content/about/index.md`
+3. **404 if neither exists**
+
+**Precedence Rule**: If both `content/about.md` AND `content/about/index.md` exist, the direct file takes precedence. This ensures backward compatibility and predictable behavior.
+
+This means you can gradually migrate from flat to hierarchical structure, or choose the approach that best fits each section of your site.
 
 ### Best Practices
 
 - Use descriptive filenames (lowercase, hyphens for spaces)
-- Organize related content in subdirectories
+- Organize related content in subdirectories using `index.md` files
+- Use flat structure for standalone pages (about, contact, etc.)
+- Use hierarchical structure for content with multiple sub-pages (documentation, blog sections, etc.)
 - Always include frontmatter with at least a title
 - Keep file paths under 255 characters
 - Use only alphanumeric characters, hyphens, and underscores
