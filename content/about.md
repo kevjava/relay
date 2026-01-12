@@ -6,7 +6,7 @@ author: Relay CMS
 
 # About Relay
 
-Relay is a minimal, secure PHP-based content management system designed specifically for government dispatch centers and organizations that need a simple, reliable way to manage content without the complexity of traditional CMS platforms.
+Relay is a minimal, secure PHP-based content management system designed to be a reliable way to manage content without the complexity of traditional CMS platforms.
 
 ## Design Philosophy
 
@@ -28,10 +28,8 @@ Relay is built with:
 
 ## Use Cases
 
-Relay is perfect for:
+Relay is designed for:
 
 - Internal documentation sites
-- Dispatch center information systems
-- Government department websites
 - Team wikis and knowledge bases
-- Any situation where simplicity and security are paramount
+- Simple relaying of information in a simple Markdown format
