@@ -7,6 +7,9 @@
 (function () {
   "use strict";
 
+  // Track unsaved changes
+  let hasUnsavedChanges = false;
+
   // Get CSRF token from meta tag
   function getCsrfToken() {
     const meta = document.querySelector('meta[name="csrf-token"]');
@@ -22,6 +25,18 @@
   // Get all menu items
   function getMenuItems() {
     return Array.from(document.querySelectorAll(".relay-menu-item"));
+  }
+
+  // Mark menu as having unsaved changes
+  function markUnsaved() {
+    hasUnsavedChanges = true;
+
+    // Show visual indicator
+    const statusSpan = document.getElementById("save-status");
+    if (statusSpan) {
+      statusSpan.textContent = "Unsaved changes";
+      statusSpan.className = "relay-status-unsaved";
+    }
   }
 
   // Update item indices
@@ -71,6 +86,7 @@
 
     container.insertAdjacentHTML("beforeend", itemHtml);
     updateIndices();
+    markUnsaved();
 
     // Focus on the new item's label input
     const newItems = getMenuItems();
@@ -86,6 +102,7 @@
     if (confirm("Are you sure you want to delete this menu item?")) {
       item.remove();
       updateIndices();
+      markUnsaved();
 
       // Show empty message if no items left
       const items = getMenuItems();
@@ -103,6 +120,7 @@
     if (prev && prev.classList.contains("relay-menu-item")) {
       item.parentNode.insertBefore(item, prev);
       updateIndices();
+      markUnsaved();
     }
   }
 
@@ -112,6 +130,7 @@
     if (next && next.classList.contains("relay-menu-item")) {
       item.parentNode.insertBefore(next, item);
       updateIndices();
+      markUnsaved();
     }
   }
 
@@ -131,6 +150,7 @@
         const newIndent = currentIndent + 1;
         item.setAttribute("data-indent", newIndent);
         updateIndentation(item);
+        markUnsaved();
       }
     }
   }
@@ -143,6 +163,7 @@
       const newIndent = currentIndent - 1;
       item.setAttribute("data-indent", newIndent);
       updateIndentation(item);
+      markUnsaved();
     }
   }
 
@@ -227,6 +248,7 @@
       })
       .then((data) => {
         if (data.success) {
+          hasUnsavedChanges = false;
           statusSpan.textContent = "✓ Saved successfully";
           statusSpan.className = "relay-status-success";
           setTimeout(() => {
@@ -294,6 +316,24 @@
     if ((e.ctrlKey || e.metaKey) && e.key === "s") {
       e.preventDefault();
       saveMenu();
+    }
+  });
+
+  // Track input changes in menu items
+  document.getElementById("menu-items").addEventListener("input", function (e) {
+    const target = e.target;
+    if (target.classList.contains("menu-item-label") || target.classList.contains("menu-item-url")) {
+      markUnsaved();
+    }
+  });
+
+  // Warn before navigating away with unsaved changes
+  window.addEventListener("beforeunload", function (e) {
+    if (hasUnsavedChanges) {
+      e.preventDefault();
+      // Modern browsers ignore custom messages and show a generic message
+      e.returnValue = "";
+      return "";
     }
   });
 })();

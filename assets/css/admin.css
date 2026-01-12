@@ -377,6 +377,17 @@ body.relay-admin {
     font-weight: 500;
 }
 
+.relay-status-unsaved {
+    color: #ff8c00;
+    font-weight: 500;
+}
+
+.relay-status-unsaved::before {
+    content: "● ";
+    font-size: 1.2em;
+    vertical-align: middle;
+}
+
 /* Admin Footer */
 .relay-admin-footer {
     background-color: #222;
