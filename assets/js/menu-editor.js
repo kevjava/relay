@@ -234,9 +234,24 @@
             statusSpan.className = "";
           }, 3000);
         } else {
-          statusSpan.textContent =
-            "✗ Error: " + (data.error || "Unknown error");
-          statusSpan.className = "relay-status-error";
+          if (data.error_type === 'session_expired') {
+            statusSpan.textContent = "✗ " + data.error;
+            statusSpan.className = "relay-status-error";
+
+            if (confirm(data.error + "\n\nClick OK to go to the login page now.")) {
+              window.location.href = data.redirect || (basePath + "/admin.php?action=login");
+            }
+          } else if (data.error_type && data.error_type.startsWith('csrf_')) {
+            statusSpan.textContent = "✗ " + data.error;
+            statusSpan.className = "relay-status-error";
+
+            if (confirm(data.error + "\n\nWould you like to refresh the page now? (Unsaved changes will be lost)")) {
+              window.location.reload();
+            }
+          } else {
+            statusSpan.textContent = "✗ Error: " + (data.error || "Unknown error");
+            statusSpan.className = "relay-status-error";
+          }
         }
       })
       .catch((error) => {

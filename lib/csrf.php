@@ -55,6 +55,73 @@ function csrf_validate_token(string $token): bool {
 }
 
 /**
+ * Get detailed reason for CSRF token validation failure
+ * Call this immediately after csrf_validate_token() returns false
+ *
+ * @param string $token The token that was validated
+ * @return string Reason code: 'missing', 'expired', 'invalid', or 'valid'
+ */
+function csrf_get_validation_failure_reason(string $token): string {
+    if (session_status() === PHP_SESSION_NONE) {
+        session_start();
+    }
+
+    if (!isset($_SESSION['csrf_token'])) {
+        return 'missing';
+    }
+
+    if (isset($_SESSION['csrf_token_time'])) {
+        $token_age = time() - $_SESSION['csrf_token_time'];
+        if ($token_age > 7200) { // 2 hours
+            return 'expired';
+        }
+    }
+
+    if (!hash_equals($_SESSION['csrf_token'], $token)) {
+        return 'invalid';
+    }
+
+    return 'valid';
+}
+
+/**
+ * Validate CSRF token and return detailed result
+ * Alternative to csrf_validate_token() with more information
+ *
+ * @param string $token The token to validate
+ * @return array Array with 'valid' (bool) and 'reason' (string)
+ */
+function csrf_validate_token_detailed(string $token): array {
+    $valid = csrf_validate_token($token);
+
+    if ($valid) {
+        return ['valid' => true, 'reason' => 'valid'];
+    }
+
+    $reason = csrf_get_validation_failure_reason($token);
+    return ['valid' => false, 'reason' => $reason];
+}
+
+/**
+ * Get user-friendly error message for CSRF validation failure
+ *
+ * @param string $reason Reason code from csrf_get_validation_failure_reason()
+ * @return string User-friendly error message
+ */
+function csrf_get_error_message(string $reason): string {
+    switch ($reason) {
+        case 'missing':
+            return 'Security token is missing. Please try again.';
+        case 'expired':
+            return 'Your security token has expired. Please refresh the page and try again.';
+        case 'invalid':
+            return 'Invalid security token. Please refresh the page and try again.';
+        default:
+            return 'Security validation failed. Please try again.';
+    }
+}
+
+/**
  * Generate an HTML hidden input field with CSRF token
  *
  * @return string HTML input field

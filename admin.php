@@ -55,8 +55,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if ($action === 'change-password') {
         auth_require_login();
 
-        if (!csrf_validate_token($_POST['csrf_token'] ?? '')) {
-            $error = 'Invalid CSRF token.';
+        $token = $_POST['csrf_token'] ?? '';
+        if (!csrf_validate_token($token)) {
+            $reason = csrf_get_validation_failure_reason($token);
+
+            if ($reason === 'missing' && !isset($_SESSION['user_authenticated'])) {
+                $error = 'Your session has expired. Please refresh the page and try again.';
+            } else {
+                $error = csrf_get_error_message($reason);
+            }
         } else {
             $user = auth_get_user();
             $old_password = $_POST['old_password'] ?? '';
@@ -79,8 +86,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if ($action === 'change-theme') {
         auth_require_login();
 
-        if (!csrf_validate_token($_POST['csrf_token'] ?? '')) {
-            $error = 'Invalid CSRF token.';
+        $token = $_POST['csrf_token'] ?? '';
+        if (!csrf_validate_token($token)) {
+            $reason = csrf_get_validation_failure_reason($token);
+
+            if ($reason === 'missing' && !isset($_SESSION['user_authenticated'])) {
+                $error = 'Your session has expired. Please refresh the page and try again.';
+            } else {
+                $error = csrf_get_error_message($reason);
+            }
         } else {
             $new_theme = $_POST['theme'] ?? '';
 
@@ -113,8 +127,24 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         header('Content-Type: application/json');
 
-        if (!csrf_validate_token($_POST['csrf_token'] ?? '')) {
-            echo json_encode(['success' => false, 'error' => 'Invalid CSRF token']);
+        $token = $_POST['csrf_token'] ?? '';
+        if (!csrf_validate_token($token)) {
+            $reason = csrf_get_validation_failure_reason($token);
+
+            if ($reason === 'missing' && !isset($_SESSION['user_authenticated'])) {
+                echo json_encode([
+                    'success' => false,
+                    'error' => 'Your session has expired. Please refresh the page and log in again.',
+                    'error_type' => 'session_expired',
+                    'redirect' => url_base('/admin.php?action=login')
+                ]);
+            } else {
+                echo json_encode([
+                    'success' => false,
+                    'error' => csrf_get_error_message($reason),
+                    'error_type' => 'csrf_' . $reason
+                ]);
+            }
             ob_end_flush();
             exit;
         }
@@ -173,6 +203,14 @@ if ($action !== 'login') {
 
             <?php if ($error): ?>
                 <div class="relay-message relay-message-error"><?php echo htmlspecialchars($error); ?></div>
+            <?php endif; ?>
+
+            <?php
+            $flash = auth_get_flash_message();
+            if ($flash):
+                $flash_class = 'relay-message-' . htmlspecialchars($flash['type'], ENT_QUOTES, 'UTF-8');
+            ?>
+                <div class="relay-message <?php echo $flash_class; ?>"><?php echo htmlspecialchars($flash['message'], ENT_QUOTES, 'UTF-8'); ?></div>
             <?php endif; ?>
 
             <form method="post" action="<?php echo url_base('/admin.php?action=login'); ?>">
