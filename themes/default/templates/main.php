@@ -1,3 +1,16 @@
+<?php
+/** @var array<string, mixed> $metadata */
+/** @var string $content_html */
+/** @var string $page_title */
+/** @var string $current_path */
+/** @var string $menu_current_path */
+/** @var array<int, array<string, mixed>> $header_menu */
+/** @var array<int, array<string, mixed>> $left_menu */
+/** @var array<int, array<string, mixed>> $right_menu */
+/** @var ?string $title */
+/** @var ?string $date */
+/** @var ?string $author */
+?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
