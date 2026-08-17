@@ -15,8 +15,16 @@
             "lib/content.php"
         ]
     },
+    "scripts": {
+        "test": "phpunit",
+        "test:coverage": "XDEBUG_MODE=coverage phpunit --coverage-text",
+        "test:coverage-html": "XDEBUG_MODE=coverage phpunit --coverage-html coverage-html"
+    },
     "config": {
         "optimize-autoloader": true,
         "sort-packages": true
+    },
+    "require-dev": {
+        "phpunit/phpunit": "^11"
     }
 }

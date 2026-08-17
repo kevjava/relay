@@ -26,3 +26,9 @@ composer.lock
 
 # PHP CS Fixer cache
 .php-cs-fixer.cache
+
+# PHPUnit cache
+.phpunit.cache/
+
+# Coverage files
+coverage-html/
