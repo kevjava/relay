@@ -1,198 +1,279 @@
-# Project Specification: Relay - Lightweight PHP CMS
+# Project Specification: Relay CMS
 
 ## Overview
 
-Relay is a minimal, secure PHP-based content management system designed for government dispatch centers. The system uses Markdown files for content, JSON for configuration/menus, and includes a simple admin interface for menu management and user authentication.
+Relay is a lightweight, file-based PHP CMS for small content sites, especially government and dispatch-center deployments that want simple operations, minimal dependencies, and no database. Content is stored as Markdown, configuration is stored as JSON, and page rendering is handled by a theme/template system.
 
-## Technical Requirements
+This document describes the **current implemented state of the codebase**.
 
-### Environment
+## Runtime and Dependencies
 
-- **Language**: PHP 8.1+
-- **Web Server**: Apache with mod_rewrite (nginx compatibility documented but not required for MVP)
-- **Dependencies**: Managed via Composer
-  - `erusev/parsedown`
-  - `erusev/parsedown-extra`
-- **No database required**: All data stored in JSON files and Markdown
+### Application Requirements
 
-### Docker Setup
+- **PHP**: 8.1 or newer
+- **Web server**: Apache with `mod_rewrite` and `mod_headers`
+- **Package management**: Composer
+- **Storage model**: file-based only; no database
 
-Create a `docker-compose.yml` with:
+### Composer Dependencies
 
-- PHP 8.1+ with Apache
-- Composer pre-installed
-- Volume mounts for development
-- Port mapping (8080:80 or similar)
+- `erusev/parsedown`
+- `erusev/parsedown-extra`
 
-Include a `Dockerfile` if custom configuration needed.
+### Container Setup
 
-## Directory Structure
+The repository includes both:
 
-```
+- `Dockerfile` based on `php:8.2-apache`
+- `docker-compose.yml` exposing the app on port `8080`
+
+The Docker image:
+
+- enables Apache `rewrite` and `headers`
+- installs Composer
+- installs `libsodium`
+- runs `composer install --no-dev --optimize-autoloader`
+
+## Current Directory Structure
+
+```text
 /relay/
-├── index.php              # Main router & theme
-├── admin.php              # Admin interface
-├── admin-tools.php        # CLI utilities (password reset, user creation)
-├── composer.json          # Dependencies
+├── index.php                 # Frontend router
+├── admin.php                 # Admin interface
+├── admin-tools.php           # CLI administration commands
+├── error-404.php             # Standalone 404 page
+├── composer.json
 ├── composer.lock
-├── vendor/                # Composer dependencies (gitignored)
-├── lib/
-│   ├── auth.php           # Authentication & session management
-│   ├── content.php        # Markdown parsing & file operations
-│   ├── menu.php           # Menu rendering functions
-│   └── csrf.php           # CSRF token generation/validation
-├── content/               # Markdown content files
-│   ├── .htaccess          # Deny direct access
-│   ├── index.md           # Homepage content
-│   └── [subdirectories]/  # Organized content
-├── config/                # JSON configuration files
-│   ├── .htaccess          # Deny direct access
-│   ├── users.json         # User credentials
-│   ├── header-menu.json   # Header navigation
-│   ├── left-menu.json     # Left sidebar navigation
-│   └── right-menu.json    # Right sidebar navigation
-├── assets/                # Public static files
+├── Dockerfile
+├── docker-compose.yml
+├── README.md
+├── SECURITY.md
+├── .htaccess
+├── assets/
 │   ├── css/
+│   │   ├── relay.css         # Shared/core styles
+│   │   └── admin.css         # Admin-only styles
 │   ├── js/
+│   │   └── menu-editor.js    # Vanilla JS menu editor
 │   └── img/
-├── .htaccess              # Apache rewrite rules
-├── error-404.php          # 404 error page
-└── README.md              # Setup & usage documentation
+├── content/
+│   ├── .htaccess
+│   └── *.md / nested dirs    # Markdown content
+├── config/
+│   ├── .htaccess
+│   ├── users.json
+│   ├── header-menu.json
+│   ├── left-menu.json
+│   ├── right-menu.json
+│   └── settings.json
+├── lib/
+│   ├── auth.php
+│   ├── content.php
+│   ├── csrf.php
+│   ├── menu.php
+│   ├── settings.php
+│   ├── theme.php
+│   └── url.php
+└── themes/
+    ├── default/
+    │   ├── css/
+    │   ├── templates/
+    │   └── theme.json
+    └── uswds/
+        ├── css/
+        ├── fonts/
+        ├── img/
+        ├── js/
+        ├── lib/
+        ├── templates/
+        └── theme.json
 ```
 
-## Core Functionality
+## Architecture Summary
 
-### 1. Authentication System (`lib/auth.php`)
+Relay is organized around these core systems:
 
-**Requirements:**
+1. **Authentication and sessions** for admin access
+2. **Markdown content loading** with frontmatter parsing
+3. **JSON-backed menu management**
+4. **Theme-based template rendering**
+5. **Base-path-aware URL generation** for root or subdirectory deployment
 
-- Multi-user support with username/password authentication
-- Password hashing using `password_hash()` with `PASSWORD_ARGON2ID` (fallback to `PASSWORD_BCRYPT`)
-- Two roles: `admin` and `editor`
-- PHP session-based authentication with secure flags
-- Session timeout (configurable, default 30 minutes)
-- Functions:
-  - `auth_login($username, $password)`: Authenticate user, return bool
-  - `auth_logout()`: Destroy session
-  - `auth_check()`: Verify current session is valid
-  - `auth_get_user()`: Get current user data (username, role)
-  - `auth_require_login()`: Redirect to login if not authenticated
-  - `auth_is_admin()`: Check if current user has admin role
-  - `auth_change_password($username, $old_password, $new_password)`: Change password with validation
+## Core Libraries
 
-**User JSON Format** (`config/users.json`):
+### 1. Authentication (`lib/auth.php`)
+
+Relay supports file-based multi-user authentication backed by `config/users.json`.
+
+#### Implemented behavior
+
+- usernames must match `^[a-zA-Z0-9_]+$`
+- passwords are hashed with `PASSWORD_ARGON2ID` when available, otherwise `PASSWORD_BCRYPT`
+- session timeout is **30 minutes**
+- failed login attempts are rate-limited to **5 attempts per 15 minutes per session**
+- session ID is regenerated on successful login
+- session cookies are configured with:
+  - `HttpOnly`
+  - `SameSite=Strict`
+  - `Secure` when HTTPS is detected
+  - `session.use_strict_mode=1`
+
+#### Implemented functions
+
+- `auth_init_session(): void`
+- `auth_load_users(): array`
+- `auth_save_users(array $users): bool`
+- `auth_validate_username(string $username): bool`
+- `auth_check_rate_limit(): bool`
+- `auth_record_failed_attempt(): void`
+- `auth_get_lockout_time(): int`
+- `auth_login(string $username, string $password): bool`
+- `auth_logout(bool $expired = false): void`
+- `auth_check(): bool`
+- `auth_get_user(): ?array`
+- `auth_require_login(string $redirect_url = ''): void`
+- `auth_is_admin(): bool`
+- `auth_change_password(string $username, string $old_password, string $new_password): bool`
+- `auth_hash_password(string $password): string|false`
+- `auth_create_user(string $username, string $password, string $role = 'editor'): bool`
+- `auth_reset_password(string $username, string $new_password): bool`
+- `auth_set_flash_message(string $message, string $type = 'info'): void`
+- `auth_get_flash_message(): ?array`
+
+#### User data format
 
 ```json
 {
   "admin": {
-    "password_hash": "$argon2id$v=19$m=65536,t=4,p=1$...",
+    "password_hash": "$argon2id$...",
     "role": "admin"
   },
-  "manager1": {
-    "password_hash": "$argon2id$v=19$m=65536,t=4,p=1$...",
+  "editor1": {
+    "password_hash": "$argon2id$...",
     "role": "editor"
   }
 }
 ```
 
-**Security Considerations:**
+#### Notes
 
-- Rate limiting on login attempts (track in session, 5 attempts per 15 minutes)
-- Secure session configuration: httponly, secure (if HTTPS), samesite=strict
-- Validate username format (alphanumeric + underscore only)
+- The code stores `admin` and `editor` roles.
+- Current role enforcement is minimal: `auth_is_admin()` is used for display logic, not broad authorization boundaries across the admin UI.
 
 ### 2. CSRF Protection (`lib/csrf.php`)
 
-**Requirements:**
+Relay uses a single session-backed CSRF token for forms and AJAX requests.
 
-- Token generation and validation
-- Store tokens in session
-- Functions:
-  - `csrf_generate_token()`: Create and store token, return token string
-  - `csrf_validate_token($token)`: Verify token matches session, return bool
-  - `csrf_token_field()`: Return HTML hidden input field
-  - `csrf_token_meta()`: Return HTML meta tag for AJAX requests
+#### Implemented behavior
 
-**Usage Pattern:**
+- CSRF token is generated with `random_bytes(32)`
+- token is stored in session
+- token expires after **2 hours**
+- validation uses `hash_equals()`
+- helper APIs exist for:
+  - hidden form field rendering
+  - meta tag rendering for JavaScript
+  - detailed failure reasons and user-facing messages
 
-```php
-// In form:
-echo csrf_token_field();
+#### Implemented functions
 
-// On submission:
-if (!csrf_validate_token($_POST['csrf_token'])) {
-    die('Invalid CSRF token');
-}
-```
+- `csrf_generate_token(): string`
+- `csrf_validate_token(string $token): bool`
+- `csrf_get_validation_failure_reason(string $token): string`
+- `csrf_validate_token_detailed(string $token): array`
+- `csrf_get_error_message(string $reason): string`
+- `csrf_token_field(): string`
+- `csrf_token_meta(): string`
+- `csrf_get_token(): string`
 
 ### 3. Content System (`lib/content.php`)
 
-**Requirements:**
+Relay loads Markdown content from `content/`, extracts simple YAML-style frontmatter, and renders HTML with Parsedown Extra.
 
-- Load and parse Markdown files from `/content/` directory
-- Support frontmatter (YAML-style) extraction
-- Path traversal attack prevention
-- Directory traversal support for nested content
-- Functions:
-  - `content_load($path)`: Load content file, return array with 'metadata' and 'html'
-  - `content_exists($path)`: Check if content file exists
-  - `content_sanitize_path($path)`: Clean and validate path
-  - `content_parse_frontmatter($markdown)`: Extract YAML frontmatter, return array
-  - `content_render_markdown($markdown)`: Convert Markdown to HTML using Parsedown Extra
+#### Implemented behavior
 
-**Frontmatter Format:**
+- requested paths are sanitized by:
+  - removing null bytes
+  - trimming leading/trailing slashes
+  - rejecting `.` and `..`
+  - allowing only `[a-zA-Z0-9_-]` in each path segment
+- empty path resolves to `index`
+- content lookup supports both flat and hierarchical structures
+- direct file path has precedence over nested `index.md`
+- frontmatter parser supports simple `key: value` lines
+- Markdown is rendered with `ParsedownExtra`
+- raw HTML in Markdown is currently **allowed**
 
-```markdown
----
-title: Page Title
-date: 2024-12-17
-author: Kevin
----
+#### Path resolution
 
-# Content starts here
+- `/` -> `content/index.md`
+- `/about` -> `content/about.md`, else `content/about/index.md`
+- `/about/team` -> `content/about/team.md`, else `content/about/team/index.md`
+
+#### Implemented functions
+
+- `content_sanitize_path(string $path): string|false`
+- `content_get_file_path(string $path): string|false`
+- `content_exists(string $path): bool`
+- `content_parse_frontmatter(string $markdown): array`
+- `content_render_markdown(string $markdown): string`
+- `content_load(string $path): array|false`
+- `content_get_title(array $metadata, string $default = 'Relay'): string`
+- `content_list_files(string $path = ''): array`
+
+#### Content return shape
+
+`content_load()` returns:
+
+```php
+[
+    'metadata' => [...],
+    'html' => '<p>...</p>',
+]
 ```
 
-**Path Mapping:**
+#### Security note
 
-Relay supports both flat and hierarchical content structures with automatic fallback:
-
-- `/relay/` → `content/index.md`
-- `/relay/about` → `content/about.md` (if exists), else `content/about/index.md`
-- `/relay/about/team` → `content/about/team.md` (if exists), else `content/about/team/index.md`
-
-**Fallback Priority:**
-1. Direct file path is always tried first (e.g., `content/about.md`)
-2. Directory index path is tried second (e.g., `content/about/index.md`)
-3. First match found is served; 404 returned if neither exists
-
-**Precedence:** If both `content/about.md` AND `content/about/index.md` exist, the direct file takes precedence. This ensures backward compatibility and predictable behavior.
-
-**Security:**
-
-- Strip `..`, null bytes, absolute paths from requested paths
-- Validate resolved path is within `/content/` directory
-- Return 404 for invalid paths
+The code explicitly leaves Parsedown safe mode disabled because content files are treated as trusted filesystem-managed content.
 
 ### 4. Menu System (`lib/menu.php`)
 
-**Requirements:**
+Menus are stored as JSON files in `config/` and rendered as nested navigation structures.
 
-- Load menu data from JSON files
-- Render nested menus
-- Support multiple independent menus
-- Functions:
-  - `menu_load($menu_name)`: Load menu JSON file, return array
-  - `menu_save($menu_name, $menu_data)`: Save menu array to JSON
-  - `menu_render($menu_data, $current_path)`: Generate HTML, mark active items
-  - `menu_validate($menu_data)`: Validate menu structure
+#### Implemented behavior
 
-**Menu JSON Format:**
+- menu file names are restricted to `^[a-zA-Z0-9_-]+$`
+- menus are loaded from `config/{menu-name}.json`
+- supported built-in menus are typically:
+  - `header-menu`
+  - `left-menu`
+  - `right-menu`
+- menu items require:
+  - `label`
+  - `url`
+- menu items may include recursive `children`
+- menu rendering marks active links for exact matches and descendant sections
+- menu URLs are prefixed with `url_base()` during rendering
+
+#### Implemented functions
+
+- `menu_load(string $menu_name): array`
+- `menu_save(string $menu_name, array $menu_data): bool`
+- `menu_validate(array $menu_data): bool`
+- `menu_is_active(string $url, string $current_path): bool`
+- `menu_render(array $menu_data, string $current_path = '', int $depth = 0): string`
+- `menu_render_header(array $menu_data, string $current_path = ''): string`
+- `menu_list(): array`
+- `menu_flatten_to_nested(array $flat_items): array`
+- `menu_nested_to_flat(array $nested_items, int $indent = 0): array`
+
+#### Menu JSON format
 
 ```json
 [
   {
     "label": "Home",
-    "url": "/home"
+    "url": "/"
   },
   {
     "label": "About",
@@ -201,317 +282,359 @@ Relay supports both flat and hierarchical content structures with automatic fall
       {
         "label": "Mission",
         "url": "/about/mission"
-      },
-      {
-        "label": "Staff",
-        "url": "/about/staff"
       }
     ]
   }
 ]
 ```
 
-**Rendering:**
+### 5. Settings (`lib/settings.php`)
 
-- Generate nested `<ul>` elements
-- Mark current page as active
-- Support unlimited nesting depth
+Relay stores site-wide settings in `config/settings.json`.
 
-### 5. Main Router (`index.php`)
+#### Implemented default settings
 
-**Requirements:**
-
-- Parse incoming URL
-- Route to appropriate content file
-- Handle 404 errors
-- Render page with theme
-- Integrate all menu locations (header, left, right)
-
-**Flow:**
-
-1. Start session
-2. Parse URL from `$_GET['p']` or `$_SERVER['REQUEST_URI']`
-3. Sanitize path
-4. Check if content exists
-5. If exists: load content, parse frontmatter, render with theme
-6. If not: show 404 page
-
-**Theme Structure:**
-
-```php
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <!-- CSS, meta tags -->
-    <title>Relay - <?php echo htmlspecialchars($page_title); ?></title>
-</head>
-<body>
-    <?php echo header($page_title, ['header' => $header_menu]); ?>
-
-    <main>
-        <div class="grid-container">
-            <div class="grid-row">
-                <?php if ($left_menu): ?>
-                <aside class="tablet:grid-col-3">
-                    <?php echo menu_render($left_menu, $current_path); ?>
-                </aside>
-                <?php endif; ?>
-
-                <div class="tablet:grid-col-<?php echo $left_menu ? '9' : '12'; ?>">
-                    <?php echo $content_html; ?>
-                </div>
-            </div>
-        </div>
-    </main>
-
-    <?php echo footer(); ?>
-</body>
-</html>
+```json
+{
+  "active_theme": "default",
+  "site_name": "Relay CMS",
+  "timezone": "America/New_York"
+}
 ```
 
-### 6. Admin Interface (`admin.php`)
+#### Implemented functions
 
-**Requirements:**
+- `settings_load(): array`
+- `settings_save(array $settings): bool`
+- `settings_validate(array $settings): bool`
+- `settings_get(string $key, mixed $default = null): mixed`
+- `settings_set(string $key, mixed $value): bool`
 
-- Login page (if not authenticated)
-- Menu editor interface
-- Password change form
-- User list (read-only display)
-- All forms protected with CSRF tokens
+### 6. Theme System (`lib/theme.php`)
 
-**Pages/Views:**
+Relay includes a multi-theme system. Themes live under `themes/`, expose metadata through `theme.json`, and render PHP templates from a theme-local `templates/` directory.
 
-**Login Page:**
+#### Implemented behavior
 
-- Username/password form
-- Error messages for failed attempts
-- Rate limiting display
-- "Relay Admin" branding
+- active theme is read from `config/settings.json`
+- invalid or missing theme names fall back to `default`
+- template names are sanitized to `[a-zA-Z0-9_-]+`
+- templates are PHP files with `.php` extension
+- pages can choose a template via content frontmatter:
+  - `template: main`
+  - `template: simple`
+- missing page-specific templates fall back to `main`
+- theme libraries can override core behavior by shipping `themes/{theme}/lib/{library}.php`
 
-**Dashboard (authenticated):**
+#### Implemented functions
 
-- Welcome message with Relay branding
-- List all editable menus
-- Link to each menu editor
-- Password change form
-- User list (username and role only)
-- Logout button
+- `theme_get_active_dir(): string`
+- `theme_sanitize_template_name(string $template): string|false`
+- `theme_get_template_path(string $template): string|false`
+- `theme_template_exists(string $template): bool`
+- `theme_render_template(string $template, array $variables): void`
+- `theme_list_available(): array`
+- `theme_get_metadata(string $theme_name): array|false`
+- `theme_validate(string $theme_name): bool`
+- `theme_get_active(): string`
+- `theme_set_active(string $theme_name): bool`
+- `theme_load_lib(string $library): bool`
 
-**Menu Editor:**
+#### Implemented theme metadata requirements
 
-- Display current menu structure
-- Add new menu item (label, URL, parent selection)
-- Edit existing item (inline or modal)
-- Delete item (with confirmation)
-- Reorder items (up/down buttons or drag-and-drop with vanilla JS)
-- Indent/dedent to nest items
-- Save button (AJAX submission with CSRF token)
-- Cancel/reset button
+Each theme must provide `theme.json` with at least:
 
-**JavaScript Requirements (vanilla):**
+- `name`
+- `version`
+- `templates`
 
-- Handle menu item reordering
-- Add/edit/delete operations
-- Indent/dedent functionality
-- AJAX save with CSRF token in header
-- Success/error messaging
-- No external dependencies
+#### Built-in themes
 
-### 7. CLI Tools (`admin-tools.php`)
+- `themes/default`
+- `themes/uswds`
 
-**Requirements:**
+### 7. URL Helpers (`lib/url.php`)
 
-- Command-line script for administrative tasks
-- Must be run from command line only (check `php_sapi_name() === 'cli'`)
-- Display "Relay Administration Tools" banner
+Relay supports both root deployment and subdirectory deployment without hardcoding the base path.
 
-**Commands:**
+#### Implemented behavior
+
+- base path is detected from `$_SERVER['SCRIPT_NAME']`
+- `url_base()` prefixes app URLs with the detected base path
+- `url_strip_base_path()` removes the base path during routing
+
+#### Implemented functions
+
+- `url_get_base_path(): string`
+- `url_base(string $path): string`
+- `url_strip_base_path(string $full_path): string`
+
+## Request Flow
+
+### Frontend (`index.php`)
+
+Current frontend flow:
+
+1. load Composer and core libraries
+2. load theme-specific `menu` override, if present
+3. start the auth session
+4. derive the request path from `$_GET['p']` or `REQUEST_URI`
+5. strip the deployment base path if needed
+6. sanitize the content path
+7. load the matching Markdown file
+8. load `header-menu`, `left-menu`, and `right-menu`
+9. choose template from frontmatter or default to `main`
+10. render with `theme_render_template()`
+
+#### Template variables passed by `index.php`
+
+- `$metadata`
+- `$content_html`
+- `$page_title`
+- `$current_path`
+- `$menu_current_path`
+- `$header_menu`
+- `$left_menu`
+- `$right_menu`
+- `$title`
+- `$date`
+- `$author`
+
+### 404 Handling (`error-404.php`)
+
+The 404 page is a standalone PHP view that:
+
+- loads `lib/url.php`
+- uses shared CSS from `assets/css/relay.css`
+- shows Relay branding
+- links back to the site root with `url_base('/')`
+
+There is **no dedicated debug-mode implementation** in current code.
+
+## Admin Interface (`admin.php`)
+
+The admin interface supports login, dashboard actions, menu editing, and theme switching.
+
+### Authentication model
+
+- `action=login` is public
+- all other admin actions require `auth_require_login()`
+
+### Implemented POST actions
+
+- `login`
+- `change-password`
+- `change-theme`
+- `save-menu` (AJAX)
+
+### Dashboard features
+
+- menu list with links to edit each menu
+- password change form
+- user list display
+- theme selection form
+- site link and logout link
+
+### Menu editor features
+
+- add item
+- inline edit of label and URL
+- move item up/down
+- indent/outdent to create nesting
+- delete item with confirmation
+- AJAX save
+- unsaved-changes warning in the browser
+
+### Current menu editor implementation details
+
+- built with vanilla JavaScript in `assets/js/menu-editor.js`
+- uses CSRF token from a `<meta>` tag
+- uses a hidden `base-path` field for subdirectory-safe AJAX URLs
+- converts flat indented rows into nested JSON before saving
+
+### Not currently implemented in the admin UI
+
+- drag-and-drop ordering
+- parent-picker UI
+- modal editing
+- reset/cancel menu action
+
+## CLI Tools (`admin-tools.php`)
+
+Relay provides a CLI-only administration script.
+
+### CLI guard
+
+- exits unless `php_sapi_name() === 'cli'`
+
+### Implemented commands
 
 ```bash
-# Reset user password
-php admin-tools.php reset-password <username>
-
-# Create new user
-php admin-tools.php create-user <username> <role>
-
-# List all users
-php admin-tools.php list-users
-
-# Initialize fresh Relay installation
 php admin-tools.php init
+php admin-tools.php create-user <username> <role>
+php admin-tools.php reset-password <username>
+php admin-tools.php list-users
+php admin-tools.php help
 ```
 
-**Init Command:**
+### `init` behavior
 
-- Create directory structure
-- Generate `.htaccess` files
-- Create default admin user (prompt for password)
-- Create sample content files
-- Create empty menu JSON files
-- Display success message with next steps
+The initialization command currently:
 
-### 8. Apache Configuration (`.htaccess`)
+- creates these directories if missing:
+  - `lib`
+  - `content`
+  - `config`
+  - `assets/css`
+  - `assets/js`
+  - `assets/img`
+- creates:
+  - `content/.htaccess`
+  - `config/.htaccess`
+- creates sample `content/index.md`
+- creates `header-menu.json`, `left-menu.json`, and `right-menu.json`
+- prompts for a default `admin` password
+- creates the default admin user
 
-**Root `.htaccess`:**
+### CLI banner
 
-```apache
-RewriteEngine On
+The script prints:
 
-# Redirect to index.php with path parameter
-RewriteCond %{REQUEST_FILENAME} !-f
-RewriteCond %{REQUEST_FILENAME} !-d
-RewriteRule ^(.*)$ index.php?p=$1 [L,QSA]
+- `RELAY ADMINISTRATION TOOLS`
+- `Lightweight PHP CMS`
 
-# Security headers
-Header set X-Frame-Options "SAMEORIGIN"
-Header set X-Content-Type-Options "nosniff"
-Header set X-XSS-Protection "1; mode=block"
-```
+## Themes and Templates
 
-**`content/.htaccess` and `config/.htaccess`:**
+### Current template model
+
+- templates are PHP files in `themes/{theme}/templates/`
+- the frontend chooses a template from frontmatter or defaults to `main`
+- templates are trusted PHP code, not sandboxed content
+- theme-local libraries can override core functions before the core library is loaded
+
+### Built-in template names
+
+Current built-in themes each ship:
+
+- `main`
+- `simple`
+
+### Theme selection
+
+- the active theme is selected in `config/settings.json`
+- the admin dashboard can change the active theme using `theme_set_active()`
+
+## Apache and Web Security Configuration
+
+### Root `.htaccess`
+
+The current root `.htaccess` provides:
+
+- rewrite rules that forward non-file, non-directory requests to `index.php?p=...`
+- optional commented `RewriteBase` guidance for subdirectory deployments
+- security headers:
+  - `Content-Security-Policy`
+  - `X-Frame-Options`
+  - `X-Content-Type-Options`
+  - `Referrer-Policy`
+- directory listing disabled with `Options -Indexes`
+- protection for sensitive files such as `composer.json`, `composer.lock`, `.git*`, and `.env`
+- default UTF-8 charset
+- PHP session hardening values when `mod_php` is present
+
+### Protected directories
+
+Both `content/.htaccess` and `config/.htaccess` contain:
 
 ```apache
 Require all denied
 ```
 
-### 9. Error Pages
+## Security Characteristics
 
-**`error-404.php`:**
+### Implemented protections
 
-- Standalone PHP file
-- Styled 404 page
-- Include basic header/footer with Relay branding
-- No authentication required
-- Link back to homepage
+1. **Path traversal prevention**
+   - content paths are sanitized
+   - template names are sanitized
+   - resolved content and template paths are checked against expected base directories
 
-**Debug Mode:**
+2. **CSRF protection**
+   - all state-changing admin forms use CSRF tokens
+   - AJAX menu saves require the same token
 
-- Check for `DEBUG` constant or environment variable
-- If enabled, show detailed error messages
-- If disabled, show generic errors
+3. **Session hardening**
+   - session ID regeneration on login
+   - inactivity timeout
+   - strict cookie flags
 
-## Security Requirements
+4. **Login throttling**
+   - 5 failed attempts per 15 minutes per session
 
-1. **Input Validation:**
-   - Sanitize all user inputs
-   - Validate file paths
-   - Whitelist allowed characters in usernames
+5. **Output safety**
+   - most user-facing text is HTML-escaped before output
+   - JSON responses are encoded with `json_encode()`
 
-2. **Output Encoding:**
-   - HTML-escape all user-generated content
-   - Use appropriate encoding for JSON responses
+6. **Config/content directory protection**
+   - Apache denies direct access
 
-3. **Session Security:**
-   - Regenerate session ID on login
-   - Set secure session parameters
-   - Implement session timeout
+### Important trust assumptions
 
-4. **File System:**
-   - Prevent directory traversal
-   - Validate file extensions
-   - Restrict access to config/content directories
+- Markdown content is treated as trusted input
+- templates are trusted PHP code
+- there is no web-based content editor or upload interface
 
-5. **Authentication:**
-   - Rate limit login attempts
-   - Strong password hashing
-   - Secure password reset mechanism
+## Current Documentation Set
 
-## Testing Checklist
+The repository currently includes:
 
-- [ ] Login/logout functionality
-- [ ] Password change
-- [ ] Menu CRUD operations (Create, Read, Update, Delete)
-- [ ] Menu nesting/indenting
-- [ ] Content rendering from Markdown
-- [ ] Frontmatter parsing
-- [ ] URL routing (flat and nested)
-- [ ] 404 handling
-- [ ] Path traversal attack prevention
-- [ ] CSRF token validation
-- [ ] Session timeout
-- [ ] Login rate limiting
-- [ ] CLI tools functionality
-- [ ] `.htaccess` protection for config/content
-- [ ] Multiple menu rendering (header, left, right)
+- `README.md`
+- `SECURITY.md`
+- `CHANGELOG.md`
+- `CLAUDE.md`
 
-## Documentation Requirements
+## Known Limitations and Non-Goals in Current Code
 
-**README.md should include:**
+- no database support
+- no web-based Markdown content editor
+- no media upload system
+- no password reset email flow
+- no fine-grained role/permission model beyond stored user roles
+- no plugin system
+- no theme marketplace
+- no built-in content versioning
+- no debug-mode error page toggle
 
-1. **Introduction**: What is Relay and who it's for
-2. Installation instructions
-3. Docker setup and usage
-4. Initial configuration (running init command)
-5. User management
-6. Content organization best practices
-7. Menu editing guide
-8. Security considerations
-9. Deployment checklist
-10. nginx configuration alternative
-11. Troubleshooting common issues
-12. **Tagline**: "Relay - Lightweight PHP CMS for government content management"
+## Functional Checklist for the Current Implementation
 
-**Additional Documentation:**
+- [x] Login/logout
+- [x] Password change for authenticated user
+- [x] Session timeout handling
+- [x] Login rate limiting
+- [x] CSRF token generation and validation
+- [x] Markdown rendering with frontmatter parsing
+- [x] Flat and nested content routing
+- [x] 404 page handling
+- [x] Header/left/right menu loading
+- [x] Nested menu save/render workflow
+- [x] CLI user management
+- [x] Theme selection via settings
+- [x] Template selection via frontmatter
+- [x] Subdirectory deployment support
 
-- `SECURITY.md`: Security best practices and considerations
-- `CONTRIBUTING.md`: Guidelines for future contributions (if open-sourced)
-- Inline code comments explaining security decisions
+## Branding
 
-## Non-Requirements (Out of Scope for MVP)
+- **Project name**: Relay
+- **Composer package**: `relay/relay`
+- **Repository tagline**: `Lightweight PHP CMS for government content management`
 
-- Database support
-- Content editing through web interface (users sync via WebDAV/SSH)
-- Image upload interface
-- OAuth/SSO integration
-- Multi-site management
-- Content versioning (users manage via Git)
-- Email notifications
-- Advanced user permissions
-- Plugin system
-- Theme marketplace
+## Summary
 
-## Success Criteria
+Relay is currently a file-based PHP CMS with:
 
-Relay is considered complete when:
-
-1. An admin can log in and edit menus without technical knowledge
-2. Content creators can add Markdown files via file sync and see them rendered
-3. All security requirements are met
-4. The system passes all tests in the testing checklist
-5. Documentation is complete and accurate
-6. Docker container runs successfully with no configuration
-7. The system can be deployed to multiple dispatch centers independently
-
-## Project Branding
-
-**Name:** Relay
-
-**Tagline Options:**
-
-- "Lightweight PHP CMS for content management"
-- "Simple, secure content management"
-- "Content management that stays out of your way"
-
-**Usage in Code:**
-
-- Project folder: `relay`
-- Composer package: `relay/relay` or `yourorg/relay`
-- Docker image: `relay-cms`
-- Constants: `RELAY_VERSION`, `RELAY_ROOT`, etc.
-
-**Style Guide:**
-
-- Always capitalize "Relay" when referring to the project
-- Use "a Relay installation" or "Relay sites" in prose
-- Admin interface should display "Relay Admin" or "Relay Administration"
-
----
-
-**Additional Notes:**
-
-- Prioritize security and simplicity over features
-- Code should be well-commented for future maintainers
-- Follow PSR-12 coding standards where practical
-- Design with the principle that Relay should be invisible to content creators and obvious to administrators
-- Keep dependencies minimal
-- Optimize for easy deployment across multiple dispatch centers
+- Markdown content and frontmatter
+- JSON-backed menus and settings
+- CLI-based user administration
+- a multi-theme PHP template system
+- subdirectory-aware routing and URL generation
+- a small authenticated admin interface for menus, password changes, and theme selection
