@@ -315,6 +315,15 @@ body.relay-admin {
     min-height: 200px;
 }
 
+.relay-menu-level {
+    list-style: none;
+    margin: 0;
+}
+
+.relay-menu-children {
+    padding-left: 1.5rem;
+}
+
 .relay-menu-empty {
     text-align: center;
     color: #999;
@@ -322,9 +331,12 @@ body.relay-admin {
 }
 
 .relay-menu-item {
+    margin-bottom: 0.75rem;
+}
+
+.relay-menu-item-row {
     display: flex;
     gap: 1rem;
-    margin-bottom: 0.75rem;
     padding: 0.75rem;
     background-color: #f8f9fa;
     border-radius: 4px;
@@ -335,6 +347,10 @@ body.relay-admin {
     display: flex;
     flex-direction: row;
     gap: 0.25rem;
+}
+
+.relay-drag-handle {
+    cursor: grab;
 }
 
 .relay-menu-item-content {
@@ -410,7 +426,7 @@ body.relay-admin {
         justify-content: space-between;
     }
 
-    .relay-menu-item {
+    .relay-menu-item-row {
         flex-direction: column;
     }
 

@@ -27,6 +27,39 @@
     return Array.from(document.querySelectorAll(".relay-menu-item"));
   }
 
+  // Get an item's direct child list, if it has one
+  function getChildList(item) {
+    return Array.from(item.children).find((child) =>
+      child.classList.contains("relay-menu-children")
+    );
+  }
+
+  // Get or create the list that contains an item's children
+  function getOrCreateChildList(item) {
+    const existingList = getChildList(item);
+    if (existingList) {
+      return existingList;
+    }
+
+    const childList = document.createElement("ol");
+    childList.className = "relay-menu-level relay-menu-children";
+    item.appendChild(childList);
+    return childList;
+  }
+
+  // Calculate an item's nesting depth from the nested list structure
+  function getItemDepth(item) {
+    let depth = 0;
+    let parentList = item.parentElement;
+
+    while (parentList && parentList.classList.contains("relay-menu-children")) {
+      depth++;
+      parentList = parentList.parentElement.parentElement;
+    }
+
+    return depth;
+  }
+
   // Mark menu as having unsaved changes
   function markUnsaved() {
     hasUnsavedChanges = true;
@@ -39,21 +72,13 @@
     }
   }
 
-  // Update item indices
+  // Update item indices and indentation metadata
   function updateIndices() {
     const items = getMenuItems();
     items.forEach((item, index) => {
       item.setAttribute("data-index", index);
+      item.setAttribute("data-indent", getItemDepth(item));
     });
-  }
-
-  // Update item visual indentation
-  function updateIndentation(item) {
-    const indent = parseInt(item.getAttribute("data-indent") || 0);
-    const content = item.querySelector(".relay-menu-item-content");
-    if (content) {
-      content.style.marginLeft = indent * 30 + "px";
-    }
   }
 
   // Add new menu item
@@ -69,19 +94,22 @@
     const index = items.length;
 
     const itemHtml = `
-            <div class="relay-menu-item" data-index="${index}" data-indent="0">
+        <li class="relay-menu-item" data-index="${index}" data-indent="0">
+          <div class="relay-menu-item-row">
                 <div class="relay-menu-item-controls">
-                    <button type="button" class="relay-button-icon move-up" title="Move Up">↑</button>
-                    <button type="button" class="relay-button-icon move-down" title="Move Down">↓</button>
-                    <button type="button" class="relay-button-icon indent-out" title="Outdent">←</button>
-                    <button type="button" class="relay-button-icon indent-in" title="Indent">→</button>
+            <span class="relay-button-icon relay-drag-handle" role="img" aria-label="Drag to reorder menu item" title="Drag to reorder">&#8942;&#8942;</span>
+            <button type="button" class="relay-button-icon move-up" aria-label="Move menu item up" title="Move Up">↑</button>
+            <button type="button" class="relay-button-icon move-down" aria-label="Move menu item down" title="Move Down">↓</button>
+            <button type="button" class="relay-button-icon indent-out" aria-label="Outdent menu item" title="Outdent">←</button>
+            <button type="button" class="relay-button-icon indent-in" aria-label="Indent menu item" title="Indent">→</button>
                 </div>
-                <div class="relay-menu-item-content" style="margin-left: 0px;">
-                    <input type="text" class="menu-item-label" value="" placeholder="Label">
-                    <input type="text" class="menu-item-url" value="" placeholder="URL">
-                    <button type="button" class="relay-button relay-button-danger delete-item">Delete</button>
+          <div class="relay-menu-item-content">
+            <input type="text" class="menu-item-label" value="" placeholder="Label" aria-label="Menu item label">
+            <input type="text" class="menu-item-url" value="" placeholder="URL" aria-label="Menu item URL">
+            <button type="button" class="relay-button relay-button-danger delete-item" aria-label="Delete menu item">Delete</button>
                 </div>
-            </div>
+          </div>
+        </li>
         `;
 
     container.insertAdjacentHTML("beforeend", itemHtml);
@@ -136,33 +164,28 @@
 
   // Indent item (increase nesting level)
   function indentItem(item) {
-    const currentIndent = parseInt(item.getAttribute("data-indent") || 0);
-    const index = parseInt(item.getAttribute("data-index"));
+    const previousItem = item.previousElementSibling;
 
-    // Find previous item
-    if (index > 0) {
-      const items = getMenuItems();
-      const prevItem = items[index - 1];
-      const prevIndent = parseInt(prevItem.getAttribute("data-indent") || 0);
-
-      // Can only indent up to one level deeper than previous item
-      if (currentIndent <= prevIndent) {
-        const newIndent = currentIndent + 1;
-        item.setAttribute("data-indent", newIndent);
-        updateIndentation(item);
-        markUnsaved();
-      }
+    if (previousItem && previousItem.classList.contains("relay-menu-item")) {
+      getOrCreateChildList(previousItem).appendChild(item);
+      updateIndices();
+      markUnsaved();
     }
   }
 
   // Outdent item (decrease nesting level)
   function outdentItem(item) {
-    const currentIndent = parseInt(item.getAttribute("data-indent") || 0);
+    const parentList = item.parentElement;
 
-    if (currentIndent > 0) {
-      const newIndent = currentIndent - 1;
-      item.setAttribute("data-indent", newIndent);
-      updateIndentation(item);
+    if (parentList && parentList.classList.contains("relay-menu-children")) {
+      const parentItem = parentList.parentElement;
+      parentItem.parentElement.insertBefore(item, parentItem.nextElementSibling);
+
+      if (!parentList.querySelector(":scope > .relay-menu-item")) {
+        parentList.remove();
+      }
+
+      updateIndices();
       markUnsaved();
     }
   }
