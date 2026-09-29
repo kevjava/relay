@@ -9,6 +9,8 @@
 
   // Track unsaved changes
   let hasUnsavedChanges = false;
+  let sortableGroupIndex = 0;
+  const sortableInstances = new Map();
 
   // Get CSRF token from meta tag
   function getCsrfToken() {
@@ -25,6 +27,13 @@
   // Get all menu items
   function getMenuItems() {
     return Array.from(document.querySelectorAll(".relay-menu-item"));
+  }
+
+  // Get only the menu items directly owned by a sibling list
+  function getDirectItems(list) {
+    return Array.from(list.children).filter((child) =>
+      child.classList.contains("relay-menu-item")
+    );
   }
 
   // Get an item's direct child list, if it has one
@@ -58,6 +67,113 @@
     }
 
     return depth;
+  }
+
+  // Enable sorting within one sibling list without allowing cross-list moves
+  function initializeSortable(list) {
+    if (sortableInstances.has(list) || typeof window.Sortable === "undefined") {
+      return;
+    }
+
+    const sortable = window.Sortable.create(list, {
+      animation: 150,
+      chosenClass: "relay-menu-item-chosen",
+      draggable: ">.relay-menu-item",
+      ghostClass: "relay-menu-item-ghost",
+      group: {
+        name: `relay-menu-level-${sortableGroupIndex++}`,
+        pull: false,
+        put: false,
+      },
+      handle: ".relay-drag-handle",
+      onEnd(event) {
+        if (
+          event.from === event.to &&
+          event.oldDraggableIndex !== event.newDraggableIndex
+        ) {
+          updateIndices();
+          updateControlStates();
+          markUnsaved();
+        }
+      },
+    });
+
+    sortableInstances.set(list, sortable);
+  }
+
+  // Initialize new lists and dispose instances whose lists were removed
+  function refreshSortables() {
+    sortableInstances.forEach((sortable, list) => {
+      if (!list.isConnected) {
+        sortable.destroy();
+        sortableInstances.delete(list);
+      }
+    });
+
+    document.querySelectorAll(".relay-menu-level").forEach(initializeSortable);
+  }
+
+  // Expose which movement controls are currently available
+  function updateControlStates() {
+    getMenuItems().forEach((item) => {
+      const siblings = getDirectItems(item.parentElement);
+      const position = siblings.indexOf(item);
+      const moveUp = item.querySelector(":scope > .relay-menu-item-row .move-up");
+      const moveDown = item.querySelector(":scope > .relay-menu-item-row .move-down");
+      const indent = item.querySelector(":scope > .relay-menu-item-row .indent-in");
+      const outdent = item.querySelector(":scope > .relay-menu-item-row .indent-out");
+
+      moveUp.disabled = position <= 0;
+      moveDown.disabled = position === siblings.length - 1;
+      indent.disabled = position <= 0;
+      outdent.disabled = !item.parentElement.classList.contains("relay-menu-children");
+    });
+  }
+
+  // Finish a button-driven move and keep focus on the initiating control
+  function completeMovement(control) {
+    updateIndices();
+    updateControlStates();
+    refreshSortables();
+    markUnsaved();
+
+    if (control) {
+      window.setTimeout(() => {
+        const inverseControls = {
+          "indent-in": ".indent-out",
+          "indent-out": ".indent-in",
+          "move-down": ".move-up",
+          "move-up": ".move-down",
+        };
+        const controlClass = Object.keys(inverseControls).find((className) =>
+          control.classList.contains(className)
+        );
+        const row = control.closest(".relay-menu-item-row");
+        let focusTarget = control;
+
+        if (focusTarget.disabled && controlClass && row) {
+          focusTarget = row.querySelector(inverseControls[controlClass]);
+        }
+
+        if (!focusTarget || focusTarget.disabled) {
+          focusTarget = row ? row.querySelector(".menu-item-label") : null;
+        }
+
+        if (focusTarget && focusTarget.isConnected) {
+          focusTarget.focus();
+        }
+      }, 0);
+    }
+  }
+
+  // Remove a child list after its final item moves away
+  function removeEmptyChildList(list) {
+    if (
+      list.classList.contains("relay-menu-children") &&
+      getDirectItems(list).length === 0
+    ) {
+      list.remove();
+    }
   }
 
   // Mark menu as having unsaved changes
@@ -114,6 +230,8 @@
 
     container.insertAdjacentHTML("beforeend", itemHtml);
     updateIndices();
+    updateControlStates();
+    refreshSortables();
     markUnsaved();
 
     // Focus on the new item's label input
@@ -128,8 +246,12 @@
   // Delete menu item
   function deleteMenuItem(item) {
     if (confirm("Are you sure you want to delete this menu item?")) {
+      const parentList = item.parentElement;
       item.remove();
+      removeEmptyChildList(parentList);
       updateIndices();
+      updateControlStates();
+      refreshSortables();
       markUnsaved();
 
       // Show empty message if no items left
@@ -137,56 +259,48 @@
       if (items.length === 0) {
         const container = document.getElementById("menu-items");
         container.innerHTML =
-          '<p class="relay-menu-empty">No menu items. Click "Add Item" to create one.</p>';
+          '<li class="relay-menu-empty">No menu items. Click "Add Item" to create one.</li>';
       }
     }
   }
 
   // Move item up
-  function moveItemUp(item) {
+  function moveItemUp(item, control) {
     const prev = item.previousElementSibling;
     if (prev && prev.classList.contains("relay-menu-item")) {
       item.parentNode.insertBefore(item, prev);
-      updateIndices();
-      markUnsaved();
+      completeMovement(control);
     }
   }
 
   // Move item down
-  function moveItemDown(item) {
+  function moveItemDown(item, control) {
     const next = item.nextElementSibling;
     if (next && next.classList.contains("relay-menu-item")) {
       item.parentNode.insertBefore(next, item);
-      updateIndices();
-      markUnsaved();
+      completeMovement(control);
     }
   }
 
   // Indent item (increase nesting level)
-  function indentItem(item) {
+  function indentItem(item, control) {
     const previousItem = item.previousElementSibling;
 
     if (previousItem && previousItem.classList.contains("relay-menu-item")) {
       getOrCreateChildList(previousItem).appendChild(item);
-      updateIndices();
-      markUnsaved();
+      completeMovement(control);
     }
   }
 
   // Outdent item (decrease nesting level)
-  function outdentItem(item) {
+  function outdentItem(item, control) {
     const parentList = item.parentElement;
 
     if (parentList && parentList.classList.contains("relay-menu-children")) {
       const parentItem = parentList.parentElement;
       parentItem.parentElement.insertBefore(item, parentItem.nextElementSibling);
-
-      if (!parentList.querySelector(":scope > .relay-menu-item")) {
-        parentList.remove();
-      }
-
-      updateIndices();
-      markUnsaved();
+      removeEmptyChildList(parentList);
+      completeMovement(control);
     }
   }
 
@@ -313,13 +427,13 @@
     if (!item) return;
 
     if (target.classList.contains("move-up")) {
-      moveItemUp(item);
+      moveItemUp(item, target);
     } else if (target.classList.contains("move-down")) {
-      moveItemDown(item);
+      moveItemDown(item, target);
     } else if (target.classList.contains("indent-in")) {
-      indentItem(item);
+      indentItem(item, target);
     } else if (target.classList.contains("indent-out")) {
-      outdentItem(item);
+      outdentItem(item, target);
     } else if (target.classList.contains("delete-item")) {
       deleteMenuItem(item);
     }
@@ -359,4 +473,8 @@
       return "";
     }
   });
+
+  updateIndices();
+  updateControlStates();
+  refreshSortables();
 })();
