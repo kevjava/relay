@@ -221,7 +221,7 @@
         <li class="relay-menu-item" data-index="${index}" data-indent="0">
           <div class="relay-menu-item-row">
                 <div class="relay-menu-item-controls">
-            <button type="button" class="relay-button-icon relay-drag-handle" aria-label="Drag to reorder menu item" title="Drag to reorder">&#8942;&#8942;</button>
+            <span class="relay-button-icon relay-drag-handle" aria-hidden="true" title="Drag to reorder">&#8942;&#8942;</span>
             <button type="button" class="relay-button-icon move-up" aria-label="Move menu item up" title="Move Up">↑</button>
             <button type="button" class="relay-button-icon move-down" aria-label="Move menu item down" title="Move Down">↓</button>
             <button type="button" class="relay-button-icon indent-out" aria-label="Outdent menu item" title="Outdent">←</button>
