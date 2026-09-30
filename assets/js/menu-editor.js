@@ -304,57 +304,36 @@
     }
   }
 
-  // Collect menu data from DOM
-  function collectMenuData() {
-    const items = getMenuItems();
-    const flatItems = [];
+  // Recursively collect a sibling list into the persisted nested structure
+  function collectListData(list) {
+    const collectedItems = [];
 
-    items.forEach((item) => {
-      const label = item.querySelector(".menu-item-label").value.trim();
-      const url = item.querySelector(".menu-item-url").value.trim();
-      const indent = parseInt(item.getAttribute("data-indent") || 0);
+    getDirectItems(list).forEach((item) => {
+      const row = item.querySelector(":scope > .relay-menu-item-row");
+      const label = row.querySelector(".menu-item-label").value.trim();
+      const url = row.querySelector(".menu-item-url").value.trim();
+      const childList = getChildList(item);
+      const children = childList ? collectListData(childList) : [];
 
       if (label && url) {
-        flatItems.push({ label, url, indent });
-      }
-    });
+        const menuItem = { label, url };
 
-    // Convert flat structure to nested
-    return flatToNested(flatItems);
-  }
-
-  // Convert flat array with indent to nested structure
-  function flatToNested(flatItems) {
-    const nested = [];
-    const stack = [];
-
-    flatItems.forEach((item) => {
-      const indent = item.indent;
-      delete item.indent;
-
-      // Find correct parent level
-      while (stack.length > 0 && stack[stack.length - 1].indent >= indent) {
-        stack.pop();
-      }
-
-      if (stack.length === 0) {
-        // Top level item
-        nested.push(item);
-        stack.push({ indent, item });
-      } else {
-        // Child item
-        const parent = stack[stack.length - 1].item;
-
-        if (!parent.children) {
-          parent.children = [];
+        if (children.length > 0) {
+          menuItem.children = children;
         }
 
-        parent.children.push(item);
-        stack.push({ indent, item });
+        collectedItems.push(menuItem);
+      } else {
+        collectedItems.push(...children);
       }
     });
 
-    return nested;
+    return collectedItems;
+  }
+
+  // Collect menu data from the nested editor DOM
+  function collectMenuData() {
+    return collectListData(document.getElementById("menu-items"));
   }
 
   // Save menu via AJAX
