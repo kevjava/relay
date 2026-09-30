@@ -392,7 +392,7 @@ if ($action !== 'login') {
                             <li class="relay-menu-item" data-index="<?php echo $menu_item_index++; ?>" data-indent="<?php echo $depth; ?>">
                                 <div class="relay-menu-item-row">
                                     <div class="relay-menu-item-controls">
-                                        <span class="relay-button-icon relay-drag-handle" role="img" aria-label="Drag to reorder menu item" title="Drag to reorder">&#8942;&#8942;</span>
+                                        <button type="button" class="relay-button-icon relay-drag-handle" aria-label="Drag to reorder menu item" title="Drag to reorder">&#8942;&#8942;</button>
                                         <button type="button" class="relay-button-icon move-up" aria-label="Move menu item up" title="Move Up">↑</button>
                                         <button type="button" class="relay-button-icon move-down" aria-label="Move menu item down" title="Move Down">↓</button>
                                         <button type="button" class="relay-button-icon indent-out" aria-label="Outdent menu item" title="Outdent">←</button>

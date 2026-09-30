@@ -11,6 +11,13 @@
   let hasUnsavedChanges = false;
   let sortableGroupIndex = 0;
   const sortableInstances = new Map();
+  const reducedMotionQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
+
+  reducedMotionQuery.addEventListener("change", (event) => {
+    sortableInstances.forEach((sortable) => {
+      sortable.option("animation", event.matches ? 0 : 150);
+    });
+  });
 
   // Get CSRF token from meta tag
   function getCsrfToken() {
@@ -76,8 +83,9 @@
     }
 
     const sortable = window.Sortable.create(list, {
-      animation: 150,
+      animation: reducedMotionQuery.matches ? 0 : 150,
       chosenClass: "relay-menu-item-chosen",
+      dragClass: "relay-menu-item-dragging",
       draggable: ">.relay-menu-item",
       ghostClass: "relay-menu-item-ghost",
       group: {
@@ -213,7 +221,7 @@
         <li class="relay-menu-item" data-index="${index}" data-indent="0">
           <div class="relay-menu-item-row">
                 <div class="relay-menu-item-controls">
-            <span class="relay-button-icon relay-drag-handle" role="img" aria-label="Drag to reorder menu item" title="Drag to reorder">&#8942;&#8942;</span>
+            <button type="button" class="relay-button-icon relay-drag-handle" aria-label="Drag to reorder menu item" title="Drag to reorder">&#8942;&#8942;</button>
             <button type="button" class="relay-button-icon move-up" aria-label="Move menu item up" title="Move Up">↑</button>
             <button type="button" class="relay-button-icon move-down" aria-label="Move menu item down" title="Move Down">↓</button>
             <button type="button" class="relay-button-icon indent-out" aria-label="Outdent menu item" title="Outdent">←</button>
