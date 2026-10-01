@@ -168,6 +168,8 @@ This means you can gradually migrate from flat to hierarchical structure, or cho
 
 Relay includes a flexible theme system that allows you to create custom page layouts using HTML templates with PHP.
 
+For a complete walkthrough of theme structure, templates, assets, navigation overrides, testing, and distribution, open `/developer/themes` on an installed Relay site or read the [Theme Writer Guide source](content/developer/themes/index.md).
+
 ### Using Templates
 
 Specify a template for any page by adding a `template` field to the frontmatter:
@@ -187,12 +189,14 @@ If no template is specified, the `main` template is used by default.
 ### Built-in Templates
 
 **main** (default):
+
 - Three-column responsive layout
 - Full-width header with navigation
 - Optional left and right sidebars
 - Adapts automatically based on which menus are configured
 
 **simple**:
+
 - Minimal single-column layout
 - No sidebars or complex navigation
 - Perfect for focused content pages
@@ -201,33 +205,34 @@ If no template is specified, the `main` template is used by default.
 
 1. Create a new `.php` file in the active theme's templates directory (e.g., `themes/default/templates/`):
 
-```bash
-touch themes/default/templates/my-template.php
-chmod 644 themes/default/templates/my-template.php
-```
+    ```bash
+    touch themes/default/templates/my-template.php
+    chmod 644 themes/default/templates/my-template.php
+    ```
 
 2. Write your template using HTML with PHP blocks:
 
-```html
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <title><?php echo htmlspecialchars($page_title, ENT_QUOTES, 'UTF-8'); ?></title>
-    <link rel="stylesheet" href="<?php echo url_base('/assets/css/relay.css'); ?>">
-    <link rel="stylesheet" href="<?php echo url_base('/themes/default/css/default.css'); ?>">
-</head>
-<body>
-    <h1><?php echo htmlspecialchars($title, ENT_QUOTES, 'UTF-8'); ?></h1>
-    <div><?php echo $content_html; ?></div>
-</body>
-</html>
-```
+    ```html
+    <!DOCTYPE html>
+    <html lang="en">
+    <head>
+        <title><?php echo htmlspecialchars($page_title, ENT_QUOTES, 'UTF-8'); ?></title>
+        <link rel="stylesheet" href="<?php echo url_base('/assets/css/relay.css'); ?>">
+        <link rel="stylesheet" href="<?php echo url_base('/themes/default/css/default.css'); ?>">
+    </head>
+    <body>
+        <h1><?php echo htmlspecialchars($title, ENT_QUOTES, 'UTF-8'); ?></h1>
+        <div><?php echo $content_html; ?></div>
+    </body>
+    </html>
+    ```
 
 3. Use it in your content by specifying `template: my-template` in the frontmatter
 
 ### Available Template Variables
 
 Templates have access to:
+
 - `$content_html` - Your rendered markdown content
 - `$metadata` - All frontmatter fields
 - `$title`, `$date`, `$author` - Common metadata fields
@@ -237,6 +242,7 @@ Templates have access to:
 - Helper functions: `menu_render()`, `menu_render_header()`, `url_base()`
 
 **Important**: Always use `url_base()` for all URLs in templates to support subdirectory deployments:
+
 ```php
 <link rel="stylesheet" href="<?php echo url_base('/assets/css/style.css'); ?>">
 <a href="<?php echo url_base('/about'); ?>">About</a>
@@ -253,6 +259,7 @@ Relay supports multiple themes. The active theme is configured in `config/settin
 ```
 
 Available themes are located in the `themes/` directory. Each theme contains:
+
 - `templates/` - PHP template files
 - `css/` - Theme-specific stylesheets
 - `js/` - Theme-specific JavaScript
@@ -447,30 +454,35 @@ server {
 ### Common Issues
 
 **Problem**: White screen / 500 error
+
 - Check PHP error logs
 - Ensure vendor directory exists (run `composer install`)
 - Verify file permissions
 - Check PHP version (8.1+ required)
 
 **Problem**: Cannot log in
+
 - Verify users.json exists in config/
 - Check that session directory is writable
 - Clear browser cookies
 - Try password reset via CLI
 
 **Problem**: Content not displaying
+
 - Check that .md file exists in content/
 - Verify file permissions (must be readable)
 - Check for PHP errors in content rendering
 - Ensure Parsedown is installed
 
 **Problem**: Menus not saving
+
 - Check CSRF token is being sent
 - Verify config/ directory is writable
 - Check browser console for JavaScript errors
 - Ensure admin user is logged in
 
 **Problem**: 404 on all pages
+
 - Verify .htaccess is being read (AllowOverride All)
 - Check mod_rewrite is enabled
 - For subdirectory deployment: Ensure RewriteBase is set in .htaccess
@@ -543,6 +555,7 @@ error_reporting(E_ALL);
 **Templates**: Create custom templates in `themes/[theme-name]/templates/`. Each theme can have its own set of templates.
 
 **Styles**:
+
 - Core styles: `assets/css/relay.css` (minimal styles for admin/error pages)
 - Theme styles: `themes/[theme-name]/css/` (theme-specific styling)
 
@@ -551,6 +564,7 @@ error_reporting(E_ALL);
 **Functionality**: Extend core libraries in `lib/` or add custom functions to `lib/theme.php`.
 
 **Creating a New Theme**:
+
 1. Create a new directory in `themes/` (e.g., `themes/mytheme/`)
 2. Add required structure: `templates/`, `css/`, `js/`, `assets/`
 3. Create `theme.json` with metadata (name, version, templates list)
@@ -568,7 +582,7 @@ MIT License - see LICENSE file for details
 ## Support
 
 For issues, questions, or contributions, please visit:
-https://github.com/kevjava/relay/issues
+<https://github.com/kevjava/relay/issues>
 
 ---
 

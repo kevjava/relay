@@ -2,13 +2,15 @@
 
 This directory contains the theme system for Relay CMS. Templates are plain HTML files with PHP blocks that can be specified via markdown frontmatter.
 
+For the current extension contract and a complete example, read the [Theme Writer Guide](../../content/developer/themes/index.md).
+
 ## Directory Structure
 
-```
-theme/
+```text
+themes/default/
 ├── templates/          # HTML template files
-│   ├── main.html      # Default template (three-column layout)
-│   └── simple.html    # Minimal template example
+│   ├── main.php       # Default template (three-column layout)
+│   └── simple.php     # Minimal template example
 ├── css/               # Theme-specific stylesheets
 ├── js/                # Theme-specific JavaScript
 └── assets/            # Theme-specific assets (images, fonts, etc.)
@@ -36,7 +38,7 @@ If no `template` field is specified, the `main` template is used by default.
 
 ### Template Files
 
-Templates are HTML files located in `theme/templates/` with a `.php` extension. They can include PHP blocks for dynamic content.
+Templates are PHP files located in `themes/default/templates/`. They contain HTML with PHP blocks for dynamic content.
 
 **Example:**
 
@@ -93,11 +95,11 @@ Templates have access to all PHP functions including:
 
 ### Step 1: Create Template File
 
-Create a new `.html` file in `theme/templates/`:
+Create a new `.php` file in `themes/default/templates/`:
 
 ```bash
-touch theme/templates/my-template.html
-chmod 644 theme/templates/my-template.html
+touch themes/default/templates/my-template.php
+chmod 644 themes/default/templates/my-template.php
 ```
 
 ### Step 2: Write Template HTML
@@ -237,7 +239,7 @@ template: main
 ---
 ```
 
-### simple.html
+### simple.php
 
 Minimal layout with:
 
@@ -319,7 +321,7 @@ template: simple
 
 **Solutions:**
 
-- Verify file exists: `ls -la theme/templates/main.html`
+- Verify file exists: `ls -la themes/default/templates/main.php`
 - Check permissions: Should be `644` (rw-r--r--)
 - Ensure filename matches exactly (case-sensitive)
 
@@ -329,7 +331,7 @@ template: simple
 
 **Solutions:**
 
-- Check PHP syntax: `php -l theme/templates/your-template.html`
+- Check PHP syntax: `php -l themes/default/templates/your-template.php`
 - Ensure all `<?php` tags are properly closed with `?>`
 - Check for unmatched quotes or brackets
 
@@ -357,14 +359,13 @@ template: simple
 
 **Solutions:**
 
-- Use absolute paths: `/assets/css/style.css`
-- Or use relative paths from root: `href="/theme/css/theme.css"`
+- Generate local URLs with `url_base()`, such as `url_base('/themes/default/css/default.css')`
 - Check file permissions: Should be `644`
 - Check directory permissions: Should be `755`
 
 ## Advanced Topics
 
-### Dynamic Grid Classes (see main.html)
+### Dynamic Grid Classes (see main.php)
 
 ```php
 <?php
@@ -387,27 +388,9 @@ if ($has_left && $has_right) {
 </div>
 ```
 
-### Custom Helper Functions
+### Custom Menu Rendering
 
-You can define custom template helper functions in `lib/theme.php`:
-
-```php
-/**
- * Generate asset URL for theme files
- */
-function theme_asset_url(string $path): string {
-    return '/theme/' . ltrim($path, '/');
-}
-```
-
-Then use in templates:
-
-```html
-<link
-  rel="stylesheet"
-  href="<?php echo theme_asset_url('css/custom.css'); ?>"
-/>
-```
+A theme may define compatible `menu_render()` and `menu_render_header()` functions in `themes/default/lib/menu.php`. See the Theme Writer Guide before adding an override. Other theme libraries are not loaded automatically by the current front controller.
 
 ## File Permissions
 
@@ -415,13 +398,13 @@ Ensure correct permissions for theme files:
 
 ```bash
 # Theme directories
-chmod 755 theme theme/templates theme/css theme/js theme/assets
+chmod 755 themes/default themes/default/templates themes/default/css
 
 # Template files
-chmod 644 theme/templates/*.html
+chmod 644 themes/default/templates/*.php
 
 # CSS/JS files
-chmod 644 theme/css/*.css theme/js/*.js
+chmod 644 themes/default/css/*.css
 ```
 
 ## Contributing

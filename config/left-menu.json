@@ -10,6 +10,50 @@
             {
                 "label": "About",
                 "url": "/about"
+            },
+            {
+                "label": "Developer Guides",
+                "url": "/developer",
+                "children": [
+                    {
+                        "label": "Theme Writer Guide",
+                        "url": "/developer/themes",
+                        "children": [
+                            {
+                                "label": "Quick Start",
+                                "url": "/developer/themes/quick-start"
+                            },
+                            {
+                                "label": "Structure and Metadata",
+                                "url": "/developer/themes/structure-and-metadata"
+                            },
+                            {
+                                "label": "Templates",
+                                "url": "/developer/themes/templates"
+                            },
+                            {
+                                "label": "Assets and URLs",
+                                "url": "/developer/themes/assets-and-urls"
+                            },
+                            {
+                                "label": "Navigation",
+                                "url": "/developer/themes/navigation"
+                            },
+                            {
+                                "label": "Security and Accessibility",
+                                "url": "/developer/themes/security-and-accessibility"
+                            },
+                            {
+                                "label": "Testing and Debugging",
+                                "url": "/developer/themes/testing-and-debugging"
+                            },
+                            {
+                                "label": "Packaging",
+                                "url": "/developer/themes/packaging"
+                            }
+                        ]
+                    }
+                ]
             }
         ]
     }
