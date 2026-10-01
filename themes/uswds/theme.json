@@ -10,8 +10,8 @@
     "default_template": "main",
     "features": [
         "USWDS 3.7 components",
-        "508 compliant",
-        "WCAG 2.1 AA accessible",
+        "508-oriented accessibility patterns",
+        "Supports WCAG 2.1 AA review",
         "Responsive grid layout",
         "Government branding"
     ]

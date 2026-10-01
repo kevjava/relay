@@ -118,7 +118,7 @@ Local hosting provides:
 - Focus visible indicators
 - Semantic HTML5 elements
 - Alt text support for images in content
-- High contrast colors meeting WCAG AA standards
+- High-contrast colors intended to support WCAG AA review
 - Keyboard navigation support
 
 ## Browser Support
