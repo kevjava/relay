@@ -18,16 +18,16 @@ If the configured theme directory does not exist, Relay uses the `default` theme
 
 ## Build a Theme
 
-- [Create a theme](themes/quick-start) with the smallest working example.
-- [Define its structure and metadata](themes/structure-and-metadata).
-- [Build templates](themes/templates) using Relay's complete data contract.
-- [Load assets and build URLs](themes/assets-and-urls) that work in every deployment location.
-- [Render navigation](themes/navigation) or supply custom menu markup.
+- [Create a theme](./quick-start) with the smallest working example.
+- [Define its structure and metadata](./structure-and-metadata).
+- [Build templates](./templates) using Relay's complete data contract.
+- [Load assets and build URLs](./assets-and-urls) that work in every deployment location.
+- [Render navigation](./navigation) or supply custom menu markup.
 
 ## Prepare a Theme for Use
 
-- [Apply security and accessibility practices](themes/security-and-accessibility).
-- [Test and debug the theme](themes/testing-and-debugging).
-- [Package and maintain the theme](themes/packaging).
+- [Apply security and accessibility practices](./security-and-accessibility).
+- [Test and debug the theme](./testing-and-debugging).
+- [Package and maintain the theme](./packaging).
 
 The framework-free `themes/default/` theme is the clearest starting point. The `themes/uswds/` theme demonstrates integration with a larger design system and locally hosted assets.

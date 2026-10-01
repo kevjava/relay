@@ -94,7 +94,7 @@ To customize colors, modify the CSS custom properties in `theme.css` or override
 
 ## Local Assets
 
-The theme includes USWDS 3.7.1 assets locally for optimal performance and CSP compliance:
+The theme includes USWDS 3.7 assets locally for optimal performance and CSP compliance:
 
 - **CSS**: `/themes/uswds/css/uswds.min.css` (512KB)
 - **JS**: `/themes/uswds/js/uswds.min.js` (86KB)
@@ -140,7 +140,7 @@ The theme uses USWDS components and accessibility-oriented patterns relevant to 
 
 ### USWDS Assets
 
-The theme already includes USWDS 3.7.1 compiled assets locally. To update to a newer version:
+The theme already includes USWDS 3.7 compiled assets locally. To update to a newer version:
 
 ```bash
 cd themes/uswds
@@ -180,21 +180,21 @@ To customize USWDS with Sass:
 1. Create `themes/uswds/scss/theme.scss`
 2. Import USWDS and override variables:
 
-```scss
-// Override USWDS settings
-$theme-color-primary: 'blue-60v';
-$theme-font-type-sans: 'source-sans-pro';
+    ```scss
+    // Override USWDS settings
+    $theme-color-primary: 'blue-60v';
+    $theme-font-type-sans: 'source-sans-pro';
 
-// Import USWDS
-@import '@uswds/uswds/dist/scss/uswds';
+    // Import USWDS
+    @import '@uswds/uswds/dist/scss/uswds';
 
-// Custom styles
-.custom-class {
-  // Your styles
-}
-```
+    // Custom styles
+    .custom-class {
+      // Your styles
+    }
+    ```
 
-1. Compile to `css/theme.css`
+3. Compile to `css/theme.css`
 
 ## Resources
 

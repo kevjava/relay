@@ -8,13 +8,13 @@ Themes execute on the server and produce every public page. Treat output safety 
 
 Relay's Markdown content is trusted and may contain HTML. `$content_html` is the rendered result and should be output directly:
 
-```html
+```php
 <?php echo $content_html; ?>
 ```
 
 Metadata and menu values are plain data. Escape them for the context where they appear:
 
-```html
+```php
 <h1><?php echo htmlspecialchars((string) $metadata['title'], ENT_QUOTES, 'UTF-8'); ?></h1>
 <time datetime="<?php echo htmlspecialchars((string) $metadata['date'], ENT_QUOTES, 'UTF-8'); ?>">
     <?php echo htmlspecialchars((string) $metadata['date'], ENT_QUOTES, 'UTF-8'); ?>

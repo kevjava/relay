@@ -205,29 +205,29 @@ If no template is specified, the `main` template is used by default.
 
 1. Create a new `.php` file in the active theme's templates directory (e.g., `themes/default/templates/`):
 
-```bash
-touch themes/default/templates/my-template.php
-chmod 644 themes/default/templates/my-template.php
-```
+    ```bash
+    touch themes/default/templates/my-template.php
+    chmod 644 themes/default/templates/my-template.php
+    ```
 
-1. Write your template using HTML with PHP blocks:
+2. Write your template using HTML with PHP blocks:
 
-```html
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <title><?php echo htmlspecialchars($page_title, ENT_QUOTES, 'UTF-8'); ?></title>
-    <link rel="stylesheet" href="<?php echo url_base('/assets/css/relay.css'); ?>">
-    <link rel="stylesheet" href="<?php echo url_base('/themes/default/css/default.css'); ?>">
-</head>
-<body>
-    <h1><?php echo htmlspecialchars($title, ENT_QUOTES, 'UTF-8'); ?></h1>
-    <div><?php echo $content_html; ?></div>
-</body>
-</html>
-```
+    ```html
+    <!DOCTYPE html>
+    <html lang="en">
+    <head>
+        <title><?php echo htmlspecialchars($page_title, ENT_QUOTES, 'UTF-8'); ?></title>
+        <link rel="stylesheet" href="<?php echo url_base('/assets/css/relay.css'); ?>">
+        <link rel="stylesheet" href="<?php echo url_base('/themes/default/css/default.css'); ?>">
+    </head>
+    <body>
+        <h1><?php echo htmlspecialchars($title, ENT_QUOTES, 'UTF-8'); ?></h1>
+        <div><?php echo $content_html; ?></div>
+    </body>
+    </html>
+    ```
 
-1. Use it in your content by specifying `template: my-template` in the frontmatter
+3. Use it in your content by specifying `template: my-template` in the frontmatter
 
 ### Available Template Variables
 
