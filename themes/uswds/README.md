@@ -1,12 +1,14 @@
 # U.S. Web Design System Theme for Relay CMS
 
-A fully compliant USWDS 3.7 theme for Relay CMS, designed for government agencies and organizations that need to follow federal web standards.
+A Relay theme built with USWDS 3.7 patterns and local assets for government agencies and organizations. Using USWDS supports accessible implementation, but deployment-specific accessibility and compliance still require testing and review.
+
+For Relay's complete theme contract, read the [Theme Writer Guide](../../content/developer/themes/index.md).
 
 ## Features
 
 - **USWDS 3.7 Compliant**: Uses official U.S. Web Design System components and styling
-- **508 Compliant**: Meets Section 508 accessibility requirements
-- **WCAG 2.1 AA**: Achieves Level AA accessibility standards
+- **Accessibility-oriented**: Uses semantic landmarks, skip navigation, and visible framework focus styles
+- **Audit-ready foundation**: Designed to support WCAG and Section 508 review without claiming automatic conformance
 - **Responsive Design**: Mobile-first approach with responsive grid layout
 - **Skip Navigation**: Keyboard-accessible skip links for main content
 - **Semantic HTML**: Proper use of ARIA labels and semantic elements
@@ -14,16 +16,20 @@ A fully compliant USWDS 3.7 theme for Relay CMS, designed for government agencie
 
 ## Templates
 
-### main.html
+### main.php
+
 Three-column responsive layout with:
+
 - USWDS header with primary navigation
 - Left sidebar with side navigation (optional)
 - Main content area with USWDS typography
 - Right sidebar with secondary navigation (optional)
 - USWDS footer with return-to-top link
 
-### simple.html
+### simple.php
+
 Single-column minimal layout with:
+
 - Basic USWDS header
 - Centered content area (10 columns with offset)
 - Slim USWDS footer
@@ -42,6 +48,7 @@ Single-column minimal layout with:
 ## Typography
 
 The theme uses USWDS typography classes:
+
 - `font-heading-xl` - Page titles
 - `usa-intro` - Introductory text (dates, authors)
 - `usa-prose` - Content body text with proper spacing
@@ -49,10 +56,13 @@ The theme uses USWDS typography classes:
 ## Navigation
 
 ### Primary Navigation (Header Menu)
+
 Horizontal navigation in the header using `usa-nav__primary`.
 
 ### Side Navigation (Left/Right Menus)
+
 Hierarchical side navigation using `usa-sidenav` with support for:
+
 - Nested menu items
 - Active state highlighting
 - Proper indentation for sub-items
@@ -60,7 +70,9 @@ Hierarchical side navigation using `usa-sidenav` with support for:
 ## Customization
 
 ### Custom CSS
+
 The theme includes `css/theme.css` with additional styling for:
+
 - Content typography enhancements
 - Code blocks and syntax highlighting
 - Table styling
@@ -70,7 +82,9 @@ The theme includes `css/theme.css` with additional styling for:
 - Mobile responsive adjustments
 
 ### Colors
+
 Default USWDS colors are used:
+
 - Primary: `#005ea2` (USWDS blue)
 - Text: `#1b1b1b` (USWDS black)
 - Background: `#ffffff` (white)
@@ -81,6 +95,7 @@ To customize colors, modify the CSS custom properties in `theme.css` or override
 ## Local Assets
 
 The theme includes USWDS 3.7.1 assets locally for optimal performance and CSP compliance:
+
 - **CSS**: `/themes/uswds/css/uswds.min.css` (512KB)
 - **JS**: `/themes/uswds/js/uswds.min.js` (86KB)
 - **Fonts**: `/themes/uswds/fonts/` (180KB total)
@@ -88,6 +103,7 @@ The theme includes USWDS 3.7.1 assets locally for optimal performance and CSP co
   - Merriweather (Regular, Bold, Italic, Bold Italic)
 
 Local hosting provides:
+
 1. Better performance (no external requests)
 2. CSP compliance (no external CDN dependencies)
 3. Offline functionality
@@ -108,6 +124,7 @@ Local hosting provides:
 ## Browser Support
 
 Matches USWDS 3.7 browser support:
+
 - Chrome (latest 2 versions)
 - Firefox (latest 2 versions)
 - Safari (latest 2 versions)
@@ -117,11 +134,7 @@ Matches USWDS 3.7 browser support:
 
 ## Compliance
 
-This theme is designed to meet:
-- **Section 508** - Federal accessibility requirements
-- **WCAG 2.1 Level AA** - Web Content Accessibility Guidelines
-- **21st Century IDEA** - Integrated Digital Experience Act
-- **OMB Memo M-23-22** - Delivering a Digital-First Public Experience
+The theme uses USWDS components and accessibility-oriented patterns relevant to Section 508, WCAG 2.1 Level AA, the 21st Century IDEA, and OMB Memo M-23-22. Conformance depends on site content, configuration, customization, and testing; using this theme alone does not establish compliance.
 
 ## Development
 
@@ -166,6 +179,7 @@ To customize USWDS with Sass:
 
 1. Create `themes/uswds/scss/theme.scss`
 2. Import USWDS and override variables:
+
 ```scss
 // Override USWDS settings
 $theme-color-primary: 'blue-60v';
@@ -179,7 +193,8 @@ $theme-font-type-sans: 'source-sans-pro';
   // Your styles
 }
 ```
-3. Compile to `css/theme.css`
+
+1. Compile to `css/theme.css`
 
 ## Resources
 

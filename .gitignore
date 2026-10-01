@@ -32,3 +32,9 @@ composer.lock
 
 # Coverage files
 coverage-html/
+
+# Node
+node_modules/
+
+# Playwright
+test-results/
