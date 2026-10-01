@@ -9,7 +9,7 @@ You should be comfortable with PHP 8.1 or later, HTML, and CSS. Begin with a wor
 ## How Relay Uses a Theme
 
 1. Relay discovers directories under `themes/` that contain `theme.json`.
-2. The configured theme is validated and selected from `config/settings.json`.
+2. Relay reads the configured theme name from `config/settings.json` and selects its directory, falling back to `themes/default/` only when the name is unsafe or the directory is missing.
 3. Relay loads the active theme's optional `lib/menu.php`, then its core menu library.
 4. The requested page is loaded and its `template` frontmatter selects a PHP template.
 5. Relay passes content, metadata, paths, and menus to that template for rendering.
