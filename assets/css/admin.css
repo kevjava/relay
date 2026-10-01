@@ -243,6 +243,16 @@ body.relay-admin {
     color: #0066cc;
 }
 
+.relay-button-icon:focus-visible {
+    outline: 3px solid rgba(0, 102, 204, 0.35);
+    outline-offset: 1px;
+}
+
+.relay-button-icon:disabled {
+    color: #aaa;
+    cursor: not-allowed;
+}
+
 /* Lists */
 .relay-menu-list,
 .relay-user-list {
@@ -313,6 +323,20 @@ body.relay-admin {
     border-radius: 4px;
     padding: 1rem;
     min-height: 200px;
+    overflow: hidden;
+}
+
+.relay-menu-level {
+    list-style: none;
+    margin: 0;
+    min-width: 0;
+    padding-inline-start: 0;
+}
+
+.relay-menu-children {
+    border-left: 2px solid #d8e6f3;
+    margin-top: 0.5rem;
+    padding-inline-start: clamp(0.5rem, 2vw, 1.5rem);
 }
 
 .relay-menu-empty {
@@ -322,9 +346,15 @@ body.relay-admin {
 }
 
 .relay-menu-item {
+    margin-bottom: 0.75rem;
+    min-width: 0;
+    position: relative;
+}
+
+.relay-menu-item-row {
     display: flex;
     gap: 1rem;
-    margin-bottom: 0.75rem;
+    min-width: 0;
     padding: 0.75rem;
     background-color: #f8f9fa;
     border-radius: 4px;
@@ -334,7 +364,52 @@ body.relay-admin {
 .relay-menu-item-controls {
     display: flex;
     flex-direction: row;
+    flex-wrap: wrap;
     gap: 0.25rem;
+}
+
+.relay-drag-handle {
+    cursor: grab;
+}
+
+.relay-drag-handle:hover {
+    background-color: #e6f0fa;
+    border-radius: 3px;
+}
+
+.relay-drag-handle:active,
+.relay-menu-item-chosen .relay-drag-handle {
+    cursor: grabbing;
+}
+
+.relay-menu-item-chosen>.relay-menu-item-row {
+    border-color: #0066cc;
+    box-shadow: 0 0 0 2px rgba(0, 102, 204, 0.16);
+}
+
+.relay-menu-item-ghost {
+    opacity: 0.45;
+}
+
+.relay-menu-item-ghost::before {
+    background-color: #0066cc;
+    border-radius: 2px;
+    content: "";
+    height: 3px;
+    left: 0;
+    position: absolute;
+    right: 0;
+    top: -0.45rem;
+}
+
+.relay-menu-item-ghost>.relay-menu-item-row {
+    background-color: #eaf3fb;
+    border-color: #7aaddb;
+    border-style: dashed;
+}
+
+.relay-menu-item-dragging {
+    opacity: 0.9;
 }
 
 .relay-menu-item-content {
@@ -343,11 +418,12 @@ body.relay-admin {
     gap: 0.75rem;
     align-items: center;
     flex-wrap: wrap;
+    min-width: 0;
 }
 
 .relay-menu-item-content input {
-    flex: 1;
-    min-width: 150px;
+    flex: 1 1 12rem;
+    min-width: min(150px, 100%);
     padding: 0.5rem;
     border: 1px solid #ddd;
     border-radius: 4px;
@@ -410,8 +486,20 @@ body.relay-admin {
         justify-content: space-between;
     }
 
-    .relay-menu-item {
+    .relay-menu-item-row {
         flex-direction: column;
+    }
+
+    .relay-menu-editor {
+        padding: 1rem;
+    }
+
+    .relay-menu-items {
+        padding: 0.75rem;
+    }
+
+    .relay-menu-children {
+        padding-inline-start: 0.5rem;
     }
 
     .relay-menu-item-controls {
@@ -420,6 +508,15 @@ body.relay-admin {
 
     .relay-menu-item-content {
         margin-left: 0 !important;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+
+    .relay-button,
+    .relay-button-icon,
+    .relay-admin-nav a {
+        transition-duration: 0s;
     }
 }
 
