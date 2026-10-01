@@ -355,7 +355,7 @@ Deploy as normal - Relay automatically detects root deployment and works immedia
 RewriteBase /relay/
 ```
 
-1. **Done!** - All URLs automatically adjust to include the base path.
+3. **Done!** - All URLs automatically adjust to include the base path.
 
 #### How It Works
 
