@@ -77,4 +77,36 @@ final class MenuTest extends FilesystemTestCase
         $this->assertSame('API', $nested[1]['children'][0]['label']);
         $this->assertSame($flat, menu_nested_to_flat($nested));
     }
+
+    public function testDeepMenuConversionAndPersistencePreserveOrder(): void
+    {
+        $menuName = 'phpunit-deep-menu';
+        $menuPath = RELAY_MENU_DIR . '/' . $menuName . '.json';
+        $nested = [
+            [
+                'label' => 'Parent',
+                'url' => '/parent',
+                'children' => [
+                    [
+                        'label' => 'Child',
+                        'url' => '/parent/child',
+                        'children' => [
+                            ['label' => 'First Grandchild', 'url' => '/parent/child/first'],
+                            ['label' => 'Second Grandchild', 'url' => '/parent/child/second'],
+                        ],
+                    ],
+                ],
+            ],
+            ['label' => 'Sibling', 'url' => '/sibling'],
+        ];
+
+        $this->trackPathForCleanup($menuPath);
+
+        $flat = menu_nested_to_flat($nested);
+
+        $this->assertSame([0, 1, 2, 2, 0], array_column($flat, 'indent'));
+        $this->assertSame($nested, menu_flatten_to_nested($flat));
+        $this->assertTrue(menu_save($menuName, $nested));
+        $this->assertSame($nested, menu_load($menuName));
+    }
 }

@@ -8,6 +8,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- **Drag-and-Drop Menu Editor** - Reorder menu items within their existing parent
+  - Vendored and pinned SortableJS 1.15.7 under `assets/vendor/sortablejs/`
+  - Dedicated drag handles with insertion, chosen-item, and ghost-item feedback
+  - Parent subtrees move as a unit while descendant order is preserved
+  - Dragging is restricted to sibling items and cannot change nesting level
+  - Indent, outdent, Move Up, and Move Down remain keyboard-accessible controls
+  - Reordering marks the menu unsaved and never autosaves
+  - Recursive serialization preserves the existing nested menu JSON format
+  - Honors reduced-motion preferences for drag animation
+
 - **Subdirectory Deployment Support** - Deploy to any subdirectory with automatic base path detection
   - New `lib/url.php` library (122 lines) with URL helper functions
   - `url_get_base_path()` - Auto-detects base path from `$_SERVER['SCRIPT_NAME']`
@@ -181,4 +191,3 @@ These features are under consideration but not yet implemented:
 - Full-text search functionality
 - Web-based markdown editor in admin interface
 - Template caching for performance
-- Drag-and-drop menu reordering

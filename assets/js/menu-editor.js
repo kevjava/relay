@@ -9,6 +9,15 @@
 
   // Track unsaved changes
   let hasUnsavedChanges = false;
+  let sortableGroupIndex = 0;
+  const sortableInstances = new Map();
+  const reducedMotionQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
+
+  reducedMotionQuery.addEventListener("change", (event) => {
+    sortableInstances.forEach((sortable) => {
+      sortable.option("animation", event.matches ? 0 : 150);
+    });
+  });
 
   // Get CSRF token from meta tag
   function getCsrfToken() {
@@ -27,6 +36,154 @@
     return Array.from(document.querySelectorAll(".relay-menu-item"));
   }
 
+  // Get only the menu items directly owned by a sibling list
+  function getDirectItems(list) {
+    return Array.from(list.children).filter((child) =>
+      child.classList.contains("relay-menu-item")
+    );
+  }
+
+  // Get an item's direct child list, if it has one
+  function getChildList(item) {
+    return Array.from(item.children).find((child) =>
+      child.classList.contains("relay-menu-children")
+    );
+  }
+
+  // Get or create the list that contains an item's children
+  function getOrCreateChildList(item) {
+    const existingList = getChildList(item);
+    if (existingList) {
+      return existingList;
+    }
+
+    const childList = document.createElement("ol");
+    childList.className = "relay-menu-level relay-menu-children";
+    item.appendChild(childList);
+    return childList;
+  }
+
+  // Calculate an item's nesting depth from the nested list structure
+  function getItemDepth(item) {
+    let depth = 0;
+    let parentList = item.parentElement;
+
+    while (parentList && parentList.classList.contains("relay-menu-children")) {
+      depth++;
+      parentList = parentList.parentElement.parentElement;
+    }
+
+    return depth;
+  }
+
+  // Enable sorting within one sibling list without allowing cross-list moves
+  function initializeSortable(list) {
+    if (sortableInstances.has(list) || typeof window.Sortable === "undefined") {
+      return;
+    }
+
+    const sortable = window.Sortable.create(list, {
+      animation: reducedMotionQuery.matches ? 0 : 150,
+      chosenClass: "relay-menu-item-chosen",
+      dragClass: "relay-menu-item-dragging",
+      draggable: ">.relay-menu-item",
+      ghostClass: "relay-menu-item-ghost",
+      group: {
+        name: `relay-menu-level-${sortableGroupIndex++}`,
+        pull: false,
+        put: false,
+      },
+      handle: ".relay-drag-handle",
+      onEnd(event) {
+        if (
+          event.from === event.to &&
+          event.oldDraggableIndex !== event.newDraggableIndex
+        ) {
+          updateIndices();
+          updateControlStates();
+          markUnsaved();
+        }
+      },
+    });
+
+    sortableInstances.set(list, sortable);
+  }
+
+  // Initialize new lists and dispose instances whose lists were removed
+  function refreshSortables() {
+    sortableInstances.forEach((sortable, list) => {
+      if (!list.isConnected) {
+        sortable.destroy();
+        sortableInstances.delete(list);
+      }
+    });
+
+    document.querySelectorAll(".relay-menu-level").forEach(initializeSortable);
+  }
+
+  // Expose which movement controls are currently available
+  function updateControlStates() {
+    getMenuItems().forEach((item) => {
+      const siblings = getDirectItems(item.parentElement);
+      const position = siblings.indexOf(item);
+      const moveUp = item.querySelector(":scope > .relay-menu-item-row .move-up");
+      const moveDown = item.querySelector(":scope > .relay-menu-item-row .move-down");
+      const indent = item.querySelector(":scope > .relay-menu-item-row .indent-in");
+      const outdent = item.querySelector(":scope > .relay-menu-item-row .indent-out");
+
+      moveUp.disabled = position <= 0;
+      moveDown.disabled = position === siblings.length - 1;
+      indent.disabled = position <= 0;
+      outdent.disabled = !item.parentElement.classList.contains("relay-menu-children");
+    });
+  }
+
+  // Finish a button-driven move and keep focus on the initiating control
+  function completeMovement(control) {
+    updateIndices();
+    updateControlStates();
+    refreshSortables();
+    markUnsaved();
+
+    if (control) {
+      window.setTimeout(() => {
+        const inverseControls = {
+          "indent-in": ".indent-out",
+          "indent-out": ".indent-in",
+          "move-down": ".move-up",
+          "move-up": ".move-down",
+        };
+        const controlClass = Object.keys(inverseControls).find((className) =>
+          control.classList.contains(className)
+        );
+        const row = control.closest(".relay-menu-item-row");
+        let focusTarget = control;
+
+        if (focusTarget.disabled && controlClass && row) {
+          focusTarget = row.querySelector(inverseControls[controlClass]);
+        }
+
+        if (!focusTarget || focusTarget.disabled) {
+          focusTarget = row ? row.querySelector(".menu-item-label") : null;
+        }
+
+        if (focusTarget && focusTarget.isConnected) {
+          focusTarget.focus();
+        }
+      }, 0);
+    }
+  }
+
+  // Remove a child list after its final item moves away
+  function removeEmptyChildList(list) {
+    if (
+      list.classList.contains("relay-menu-children") &&
+      getDirectItems(list).length === 0
+    ) {
+      list.remove();
+    }
+  }
+
   // Mark menu as having unsaved changes
   function markUnsaved() {
     hasUnsavedChanges = true;
@@ -39,21 +196,13 @@
     }
   }
 
-  // Update item indices
+  // Update item indices and indentation metadata
   function updateIndices() {
     const items = getMenuItems();
     items.forEach((item, index) => {
       item.setAttribute("data-index", index);
+      item.setAttribute("data-indent", getItemDepth(item));
     });
-  }
-
-  // Update item visual indentation
-  function updateIndentation(item) {
-    const indent = parseInt(item.getAttribute("data-indent") || 0);
-    const content = item.querySelector(".relay-menu-item-content");
-    if (content) {
-      content.style.marginLeft = indent * 30 + "px";
-    }
   }
 
   // Add new menu item
@@ -69,23 +218,28 @@
     const index = items.length;
 
     const itemHtml = `
-            <div class="relay-menu-item" data-index="${index}" data-indent="0">
+        <li class="relay-menu-item" data-index="${index}" data-indent="0">
+          <div class="relay-menu-item-row">
                 <div class="relay-menu-item-controls">
-                    <button type="button" class="relay-button-icon move-up" title="Move Up">↑</button>
-                    <button type="button" class="relay-button-icon move-down" title="Move Down">↓</button>
-                    <button type="button" class="relay-button-icon indent-out" title="Outdent">←</button>
-                    <button type="button" class="relay-button-icon indent-in" title="Indent">→</button>
+            <span class="relay-button-icon relay-drag-handle" aria-hidden="true" title="Drag to reorder">&#8942;&#8942;</span>
+            <button type="button" class="relay-button-icon move-up" aria-label="Move menu item up" title="Move Up">↑</button>
+            <button type="button" class="relay-button-icon move-down" aria-label="Move menu item down" title="Move Down">↓</button>
+            <button type="button" class="relay-button-icon indent-out" aria-label="Outdent menu item" title="Outdent">←</button>
+            <button type="button" class="relay-button-icon indent-in" aria-label="Indent menu item" title="Indent">→</button>
                 </div>
-                <div class="relay-menu-item-content" style="margin-left: 0px;">
-                    <input type="text" class="menu-item-label" value="" placeholder="Label">
-                    <input type="text" class="menu-item-url" value="" placeholder="URL">
-                    <button type="button" class="relay-button relay-button-danger delete-item">Delete</button>
+          <div class="relay-menu-item-content">
+            <input type="text" class="menu-item-label" value="" placeholder="Label" aria-label="Menu item label">
+            <input type="text" class="menu-item-url" value="" placeholder="URL" aria-label="Menu item URL">
+            <button type="button" class="relay-button relay-button-danger delete-item" aria-label="Delete menu item">Delete</button>
                 </div>
-            </div>
+          </div>
+        </li>
         `;
 
     container.insertAdjacentHTML("beforeend", itemHtml);
     updateIndices();
+    updateControlStates();
+    refreshSortables();
     markUnsaved();
 
     // Focus on the new item's label input
@@ -100,8 +254,12 @@
   // Delete menu item
   function deleteMenuItem(item) {
     if (confirm("Are you sure you want to delete this menu item?")) {
+      const parentList = item.parentElement;
       item.remove();
+      removeEmptyChildList(parentList);
       updateIndices();
+      updateControlStates();
+      refreshSortables();
       markUnsaved();
 
       // Show empty message if no items left
@@ -109,115 +267,81 @@
       if (items.length === 0) {
         const container = document.getElementById("menu-items");
         container.innerHTML =
-          '<p class="relay-menu-empty">No menu items. Click "Add Item" to create one.</p>';
+          '<li class="relay-menu-empty">No menu items. Click "Add Item" to create one.</li>';
       }
     }
   }
 
   // Move item up
-  function moveItemUp(item) {
+  function moveItemUp(item, control) {
     const prev = item.previousElementSibling;
     if (prev && prev.classList.contains("relay-menu-item")) {
       item.parentNode.insertBefore(item, prev);
-      updateIndices();
-      markUnsaved();
+      completeMovement(control);
     }
   }
 
   // Move item down
-  function moveItemDown(item) {
+  function moveItemDown(item, control) {
     const next = item.nextElementSibling;
     if (next && next.classList.contains("relay-menu-item")) {
       item.parentNode.insertBefore(next, item);
-      updateIndices();
-      markUnsaved();
+      completeMovement(control);
     }
   }
 
   // Indent item (increase nesting level)
-  function indentItem(item) {
-    const currentIndent = parseInt(item.getAttribute("data-indent") || 0);
-    const index = parseInt(item.getAttribute("data-index"));
+  function indentItem(item, control) {
+    const previousItem = item.previousElementSibling;
 
-    // Find previous item
-    if (index > 0) {
-      const items = getMenuItems();
-      const prevItem = items[index - 1];
-      const prevIndent = parseInt(prevItem.getAttribute("data-indent") || 0);
-
-      // Can only indent up to one level deeper than previous item
-      if (currentIndent <= prevIndent) {
-        const newIndent = currentIndent + 1;
-        item.setAttribute("data-indent", newIndent);
-        updateIndentation(item);
-        markUnsaved();
-      }
+    if (previousItem && previousItem.classList.contains("relay-menu-item")) {
+      getOrCreateChildList(previousItem).appendChild(item);
+      completeMovement(control);
     }
   }
 
   // Outdent item (decrease nesting level)
-  function outdentItem(item) {
-    const currentIndent = parseInt(item.getAttribute("data-indent") || 0);
+  function outdentItem(item, control) {
+    const parentList = item.parentElement;
 
-    if (currentIndent > 0) {
-      const newIndent = currentIndent - 1;
-      item.setAttribute("data-indent", newIndent);
-      updateIndentation(item);
-      markUnsaved();
+    if (parentList && parentList.classList.contains("relay-menu-children")) {
+      const parentItem = parentList.parentElement;
+      parentItem.parentElement.insertBefore(item, parentItem.nextElementSibling);
+      removeEmptyChildList(parentList);
+      completeMovement(control);
     }
   }
 
-  // Collect menu data from DOM
-  function collectMenuData() {
-    const items = getMenuItems();
-    const flatItems = [];
+  // Recursively collect a sibling list into the persisted nested structure
+  function collectListData(list) {
+    const collectedItems = [];
 
-    items.forEach((item) => {
-      const label = item.querySelector(".menu-item-label").value.trim();
-      const url = item.querySelector(".menu-item-url").value.trim();
-      const indent = parseInt(item.getAttribute("data-indent") || 0);
+    getDirectItems(list).forEach((item) => {
+      const row = item.querySelector(":scope > .relay-menu-item-row");
+      const label = row.querySelector(".menu-item-label").value.trim();
+      const url = row.querySelector(".menu-item-url").value.trim();
+      const childList = getChildList(item);
+      const children = childList ? collectListData(childList) : [];
 
       if (label && url) {
-        flatItems.push({ label, url, indent });
-      }
-    });
+        const menuItem = { label, url };
 
-    // Convert flat structure to nested
-    return flatToNested(flatItems);
-  }
-
-  // Convert flat array with indent to nested structure
-  function flatToNested(flatItems) {
-    const nested = [];
-    const stack = [];
-
-    flatItems.forEach((item) => {
-      const indent = item.indent;
-      delete item.indent;
-
-      // Find correct parent level
-      while (stack.length > 0 && stack[stack.length - 1].indent >= indent) {
-        stack.pop();
-      }
-
-      if (stack.length === 0) {
-        // Top level item
-        nested.push(item);
-        stack.push({ indent, item });
-      } else {
-        // Child item
-        const parent = stack[stack.length - 1].item;
-
-        if (!parent.children) {
-          parent.children = [];
+        if (children.length > 0) {
+          menuItem.children = children;
         }
 
-        parent.children.push(item);
-        stack.push({ indent, item });
+        collectedItems.push(menuItem);
+      } else {
+        collectedItems.push(...children);
       }
     });
 
-    return nested;
+    return collectedItems;
+  }
+
+  // Collect menu data from the nested editor DOM
+  function collectMenuData() {
+    return collectListData(document.getElementById("menu-items"));
   }
 
   // Save menu via AJAX
@@ -290,13 +414,13 @@
     if (!item) return;
 
     if (target.classList.contains("move-up")) {
-      moveItemUp(item);
+      moveItemUp(item, target);
     } else if (target.classList.contains("move-down")) {
-      moveItemDown(item);
+      moveItemDown(item, target);
     } else if (target.classList.contains("indent-in")) {
-      indentItem(item);
+      indentItem(item, target);
     } else if (target.classList.contains("indent-out")) {
-      outdentItem(item);
+      outdentItem(item, target);
     } else if (target.classList.contains("delete-item")) {
       deleteMenuItem(item);
     }
@@ -336,4 +460,8 @@
       return "";
     }
   });
+
+  updateIndices();
+  updateControlStates();
+  refreshSortables();
 })();

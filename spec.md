@@ -441,20 +441,34 @@ The admin interface supports login, dashboard actions, menu editing, and theme s
 - inline edit of label and URL
 - move item up/down
 - indent/outdent to create nesting
+- drag-and-drop ordering among items with the same parent
+- dragging a parent preserves its complete descendant subtree
+- dedicated drag handles keep text inputs and other controls non-draggable
 - delete item with confirmation
 - AJAX save
 - unsaved-changes warning in the browser
 
+### Menu editor interaction details
+
+- Menus are rendered as nested ordered lists, with one sibling list per nesting level.
+- Dragging is restricted to the current sibling list and shows a ghost preview and insertion indicator.
+- Dragging does not change nesting; use Indent and Outdent to change parentage.
+- Move Up and Move Down use the same sibling and subtree rules as dragging.
+- A completed reorder, indent, outdent, add, or delete marks the menu as unsaved. Changes are saved only with the explicit Save Menu action.
+- Move, indent, outdent, and delete controls are keyboard-focusable buttons with accessible names. Focus is restored to the initiating or corresponding control after button-driven movement.
+- Dragging is mouse-oriented in the current release. Touch dragging, keyboard pickup/drop, and live screen-reader drag announcements are not implemented.
+
 ### Current menu editor implementation details
 
 - built with vanilla JavaScript in `assets/js/menu-editor.js`
+- uses vendored SortableJS 1.15.7 from `assets/vendor/sortablejs/Sortable.min.js`
 - uses CSRF token from a `<meta>` tag
 - uses a hidden `base-path` field for subdirectory-safe AJAX URLs
-- converts flat indented rows into nested JSON before saving
+- recursively serializes the nested DOM into the existing nested JSON structure before saving
+- loads the vendored SortableJS asset before the editor script using `url_base()`
 
 ### Not currently implemented in the admin UI
 
-- drag-and-drop ordering
 - parent-picker UI
 - modal editing
 - reset/cancel menu action

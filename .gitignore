@@ -33,8 +33,7 @@ composer.lock
 # Coverage files
 coverage-html/
 
-# Node
-node_modules/
-
-# Playwright
-test-results/
+# Browser test dependencies and output
+/node_modules/
+/playwright-report/
+/test-results/
