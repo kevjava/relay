@@ -1,6 +1,7 @@
 <?php
 
 require_once __DIR__ . '/session.php';
+require_once __DIR__ . '/json.php';
 
 /**
  * Authentication Library
@@ -30,14 +31,8 @@ function auth_init_session(): void
  */
 function auth_load_users(): array
 {
-    if (!file_exists(RELAY_USERS_FILE)) {
-        return [];
-    }
-
-    $json = file_get_contents(RELAY_USERS_FILE);
-    $users = json_decode($json, true);
-
-    return is_array($users) ? $users : [];
+    $users = relay_json_load(RELAY_USERS_FILE);
+    return $users === false ? [] : $users;
 }
 
 /**
@@ -48,8 +43,7 @@ function auth_load_users(): array
  */
 function auth_save_users(array $users): bool
 {
-    $json = json_encode($users, JSON_PRETTY_PRINT);
-    return file_put_contents(RELAY_USERS_FILE, $json, LOCK_EX) !== false;
+    return relay_json_save(RELAY_USERS_FILE, $users);
 }
 
 /**
