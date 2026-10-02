@@ -10,6 +10,7 @@
     },
     "autoload": {
         "files": [
+            "lib/session.php",
             "lib/auth.php",
             "lib/csrf.php",
             "lib/content.php"
