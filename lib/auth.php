@@ -1,4 +1,7 @@
 <?php
+
+require_once __DIR__ . '/session.php';
+
 /**
  * Authentication Library
  *
@@ -15,19 +18,9 @@ define('RELAY_LOGIN_LOCKOUT_TIME', 900); // 15 minutes in seconds
 /**
  * Initialize secure session configuration
  */
-function auth_init_session(): void {
-    if (session_status() === PHP_SESSION_NONE) {
-        ini_set('session.cookie_httponly', '1');
-        ini_set('session.cookie_samesite', 'Strict');
-        ini_set('session.use_strict_mode', '1');
-
-        // Set secure flag if using HTTPS
-        if (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on') {
-            ini_set('session.cookie_secure', '1');
-        }
-
-        session_start();
-    }
+function auth_init_session(): void
+{
+    relay_init_session();
 }
 
 /**
@@ -35,7 +28,8 @@ function auth_init_session(): void {
  *
  * @return array User data
  */
-function auth_load_users(): array {
+function auth_load_users(): array
+{
     if (!file_exists(RELAY_USERS_FILE)) {
         return [];
     }
@@ -52,7 +46,8 @@ function auth_load_users(): array {
  * @param array $users User data to save
  * @return bool Success status
  */
-function auth_save_users(array $users): bool {
+function auth_save_users(array $users): bool
+{
     $json = json_encode($users, JSON_PRETTY_PRINT);
     return file_put_contents(RELAY_USERS_FILE, $json, LOCK_EX) !== false;
 }
@@ -63,7 +58,8 @@ function auth_save_users(array $users): bool {
  * @param string $username Username to validate
  * @return bool True if valid
  */
-function auth_validate_username(string $username): bool {
+function auth_validate_username(string $username): bool
+{
     // Only allow alphanumeric characters and underscore
     return preg_match('/^[a-zA-Z0-9_]+$/', $username) === 1;
 }
@@ -73,7 +69,8 @@ function auth_validate_username(string $username): bool {
  *
  * @return bool True if login attempt is allowed, false if rate limited
  */
-function auth_check_rate_limit(): bool {
+function auth_check_rate_limit(): bool
+{
     auth_init_session();
 
     $now = time();
@@ -107,7 +104,8 @@ function auth_check_rate_limit(): bool {
 /**
  * Record a failed login attempt
  */
-function auth_record_failed_attempt(): void {
+function auth_record_failed_attempt(): void
+{
     auth_init_session();
 
     if (!isset($_SESSION['login_attempts'])) {
@@ -122,7 +120,8 @@ function auth_record_failed_attempt(): void {
  *
  * @return int Seconds until lockout expires, 0 if not locked
  */
-function auth_get_lockout_time(): int {
+function auth_get_lockout_time(): int
+{
     auth_init_session();
 
     if (!isset($_SESSION['login_locked_until'])) {
@@ -140,7 +139,8 @@ function auth_get_lockout_time(): int {
  * @param string $password Password
  * @return bool True if authentication successful
  */
-function auth_login(string $username, string $password): bool {
+function auth_login(string $username, string $password): bool
+{
     auth_init_session();
 
     // Check rate limiting
@@ -191,7 +191,8 @@ function auth_login(string $username, string $password): bool {
 /**
  * Log out the current user
  */
-function auth_logout(bool $expired = false): void {
+function auth_logout(bool $expired = false): void
+{
     auth_init_session();
 
     // Clear all session data
@@ -221,7 +222,8 @@ function auth_logout(bool $expired = false): void {
  *
  * @return bool True if authenticated and session valid
  */
-function auth_check(): bool {
+function auth_check(): bool
+{
     auth_init_session();
 
     // Check if user is authenticated
@@ -250,7 +252,8 @@ function auth_check(): bool {
  *
  * @return array|null User data (username, role) or null if not authenticated
  */
-function auth_get_user(): ?array {
+function auth_get_user(): ?array
+{
     if (!auth_check()) {
         return null;
     }
@@ -267,7 +270,8 @@ function auth_get_user(): ?array {
  *
  * @param string $redirect_url URL to redirect to after login (default: current page)
  */
-function auth_require_login(string $redirect_url = ''): void {
+function auth_require_login(string $redirect_url = ''): void
+{
     if (!auth_check()) {
         // Check if session just expired
         if (isset($_SESSION['auth_session_expired']) && $_SESSION['auth_session_expired'] === true) {
@@ -297,7 +301,8 @@ function auth_require_login(string $redirect_url = ''): void {
  *
  * @return bool True if user is admin
  */
-function auth_is_admin(): bool {
+function auth_is_admin(): bool
+{
     $user = auth_get_user();
     return $user !== null && ($user['role'] === 'admin');
 }
@@ -310,7 +315,8 @@ function auth_is_admin(): bool {
  * @param string $new_password New password
  * @return bool True if password changed successfully
  */
-function auth_change_password(string $username, string $old_password, string $new_password): bool {
+function auth_change_password(string $username, string $old_password, string $new_password): bool
+{
     // Validate username
     if (!auth_validate_username($username)) {
         return false;
@@ -354,7 +360,8 @@ function auth_change_password(string $username, string $old_password, string $ne
  * @param string $password Password to hash
  * @return string|false Hashed password or false on failure
  */
-function auth_hash_password(string $password): string|false {
+function auth_hash_password(string $password): string|false
+{
     // Try ARGON2ID first (preferred), fallback to BCRYPT
     if (defined('PASSWORD_ARGON2ID')) {
         return password_hash($password, PASSWORD_ARGON2ID);
@@ -371,7 +378,8 @@ function auth_hash_password(string $password): string|false {
  * @param string $role Role (admin or editor)
  * @return bool True if user created successfully
  */
-function auth_create_user(string $username, string $password, string $role = 'editor'): bool {
+function auth_create_user(string $username, string $password, string $role = 'editor'): bool
+{
     // Validate username
     if (!auth_validate_username($username)) {
         return false;
@@ -419,7 +427,8 @@ function auth_create_user(string $username, string $password, string $role = 'ed
  * @param string $new_password New password
  * @return bool True if password reset successfully
  */
-function auth_reset_password(string $username, string $new_password): bool {
+function auth_reset_password(string $username, string $new_password): bool
+{
     // Validate username
     if (!auth_validate_username($username)) {
         return false;
@@ -458,7 +467,8 @@ function auth_reset_password(string $username, string $new_password): bool {
  * @param string $message Message text
  * @param string $type Message type: 'error', 'warning', 'success', 'info'
  */
-function auth_set_flash_message(string $message, string $type = 'error'): void {
+function auth_set_flash_message(string $message, string $type = 'error'): void
+{
     auth_init_session();
     $_SESSION['auth_flash_message'] = [
         'message' => $message,
@@ -472,7 +482,8 @@ function auth_set_flash_message(string $message, string $type = 'error'): void {
  *
  * @return array|null Flash message array with 'message' and 'type', or null
  */
-function auth_get_flash_message(): ?array {
+function auth_get_flash_message(): ?array
+{
     auth_init_session();
 
     if (!isset($_SESSION['auth_flash_message'])) {
@@ -498,7 +509,8 @@ function auth_get_flash_message(): ?array {
  *
  * @return bool True if flash message exists
  */
-function auth_has_flash_message(): bool {
+function auth_has_flash_message(): bool
+{
     auth_init_session();
     return isset($_SESSION['auth_flash_message']);
 }

@@ -1,4 +1,7 @@
 <?php
+
+require_once __DIR__ . '/session.php';
+
 /**
  * CSRF Protection Library
  *
@@ -11,10 +14,9 @@
  *
  * @return string The generated token
  */
-function csrf_generate_token(): string {
-    if (session_status() === PHP_SESSION_NONE) {
-        session_start();
-    }
+function csrf_generate_token(): string
+{
+    relay_init_session();
 
     // Generate a cryptographically secure random token
     $token = bin2hex(random_bytes(32));
@@ -32,10 +34,9 @@ function csrf_generate_token(): string {
  * @param string $token The token to validate
  * @return bool True if valid, false otherwise
  */
-function csrf_validate_token(string $token): bool {
-    if (session_status() === PHP_SESSION_NONE) {
-        session_start();
-    }
+function csrf_validate_token(string $token): bool
+{
+    relay_init_session();
 
     // Check if session token exists
     if (!isset($_SESSION['csrf_token'])) {
@@ -61,10 +62,9 @@ function csrf_validate_token(string $token): bool {
  * @param string $token The token that was validated
  * @return string Reason code: 'missing', 'expired', 'invalid', or 'valid'
  */
-function csrf_get_validation_failure_reason(string $token): string {
-    if (session_status() === PHP_SESSION_NONE) {
-        session_start();
-    }
+function csrf_get_validation_failure_reason(string $token): string
+{
+    relay_init_session();
 
     if (!isset($_SESSION['csrf_token'])) {
         return 'missing';
@@ -91,7 +91,8 @@ function csrf_get_validation_failure_reason(string $token): string {
  * @param string $token The token to validate
  * @return array Array with 'valid' (bool) and 'reason' (string)
  */
-function csrf_validate_token_detailed(string $token): array {
+function csrf_validate_token_detailed(string $token): array
+{
     $valid = csrf_validate_token($token);
 
     if ($valid) {
@@ -108,7 +109,8 @@ function csrf_validate_token_detailed(string $token): array {
  * @param string $reason Reason code from csrf_get_validation_failure_reason()
  * @return string User-friendly error message
  */
-function csrf_get_error_message(string $reason): string {
+function csrf_get_error_message(string $reason): string
+{
     switch ($reason) {
         case 'missing':
             return 'Security token is missing. Please try again.';
@@ -126,7 +128,8 @@ function csrf_get_error_message(string $reason): string {
  *
  * @return string HTML input field
  */
-function csrf_token_field(): string {
+function csrf_token_field(): string
+{
     $token = isset($_SESSION['csrf_token']) ? $_SESSION['csrf_token'] : csrf_generate_token();
     return '<input type="hidden" name="csrf_token" value="' . htmlspecialchars($token, ENT_QUOTES, 'UTF-8') . '">';
 }
@@ -136,7 +139,8 @@ function csrf_token_field(): string {
  *
  * @return string HTML meta tag
  */
-function csrf_token_meta(): string {
+function csrf_token_meta(): string
+{
     $token = isset($_SESSION['csrf_token']) ? $_SESSION['csrf_token'] : csrf_generate_token();
     return '<meta name="csrf-token" content="' . htmlspecialchars($token, ENT_QUOTES, 'UTF-8') . '">';
 }
@@ -146,10 +150,9 @@ function csrf_token_meta(): string {
  *
  * @return string The current token
  */
-function csrf_get_token(): string {
-    if (session_status() === PHP_SESSION_NONE) {
-        session_start();
-    }
+function csrf_get_token(): string
+{
+    relay_init_session();
 
     return isset($_SESSION['csrf_token']) ? $_SESSION['csrf_token'] : csrf_generate_token();
 }
