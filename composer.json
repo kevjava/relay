@@ -11,6 +11,7 @@
     "autoload": {
         "files": [
             "lib/session.php",
+            "lib/json.php",
             "lib/auth.php",
             "lib/csrf.php",
             "lib/content.php"
