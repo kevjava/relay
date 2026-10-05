@@ -1,6 +1,7 @@
 <?php
 
 require_once __DIR__ . '/json.php';
+require_once __DIR__ . '/settings.php';
 
 /**
  * Relay Theme System
@@ -22,8 +23,6 @@ define('RELAY_THEMES_DIR', __DIR__ . '/../themes');
  */
 function theme_get_active_dir(): string
 {
-    // Load settings to get active theme
-    require_once __DIR__ . '/settings.php';
     $active_theme = settings_get('active_theme', 'default');
 
     // Sanitize theme name
@@ -284,7 +283,6 @@ function theme_validate(string $theme_name): bool
  */
 function theme_get_active(): string
 {
-    require_once __DIR__ . '/settings.php';
     return settings_get('active_theme', 'default');
 }
 
@@ -301,7 +299,6 @@ function theme_set_active(string $theme_name): bool
         return false;
     }
 
-    require_once __DIR__ . '/settings.php';
     return settings_set('active_theme', $theme_name);
 }
 

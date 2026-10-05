@@ -8,15 +8,6 @@
         "erusev/parsedown": "^1.7",
         "erusev/parsedown-extra": "^0.8"
     },
-    "autoload": {
-        "files": [
-            "lib/session.php",
-            "lib/json.php",
-            "lib/auth.php",
-            "lib/csrf.php",
-            "lib/content.php"
-        ]
-    },
     "scripts": {
         "test": "phpunit",
         "test:coverage": "XDEBUG_MODE=coverage phpunit --coverage-text",
