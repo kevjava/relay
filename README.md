@@ -550,6 +550,19 @@ error_reporting(E_ALL);
 └── vendor/                # Composer dependencies
 ```
 
+### Library Loading
+
+Composer provides third-party dependencies only. Application entry points load
+Relay libraries explicitly, and each library declares its own application
+dependencies with top-level `require_once` statements. This keeps libraries
+safe to include directly and avoids relying on Composer or include order to
+define Relay functions.
+
+Theme library overrides are loaded before the corresponding core library so a
+theme can provide replacement implementations. Custom libraries that generate
+URLs should include `lib/url.php` and use `url_base()` for deployment-safe
+links.
+
 ### Customization
 
 **Templates**: Create custom templates in `themes/[theme-name]/templates/`. Each theme can have its own set of templates.

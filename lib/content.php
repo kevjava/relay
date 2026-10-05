@@ -1,12 +1,11 @@
 <?php
+
 /**
  * Content Management Library
  *
  * Handles loading, parsing, and rendering of Markdown content files
  * with frontmatter support and path traversal protection.
  */
-
-require_once __DIR__ . '/../vendor/autoload.php';
 
 // Define content directory
 define('RELAY_CONTENT_DIR', __DIR__ . '/../content');
@@ -17,7 +16,8 @@ define('RELAY_CONTENT_DIR', __DIR__ . '/../content');
  * @param string $path Requested path
  * @return string|false Sanitized path or false if invalid
  */
-function content_sanitize_path(string $path): string|false {
+function content_sanitize_path(string $path): string|false
+{
     // Remove null bytes
     $path = str_replace("\0", '', $path);
 
@@ -71,7 +71,8 @@ function content_sanitize_path(string $path): string|false {
  * @param string $path Sanitized content path
  * @return string|false Full filesystem path or false if invalid or not found
  */
-function content_get_file_path(string $path): string|false {
+function content_get_file_path(string $path): string|false
+{
     $sanitized = content_sanitize_path($path);
 
     if ($sanitized === false) {
@@ -119,7 +120,8 @@ function content_get_file_path(string $path): string|false {
  * @param string $path Content path
  * @return bool True if file exists
  */
-function content_exists(string $path): bool {
+function content_exists(string $path): bool
+{
     return content_get_file_path($path) !== false;
 }
 
@@ -129,7 +131,8 @@ function content_exists(string $path): bool {
  * @param string $markdown Markdown content
  * @return array Array with 'metadata' and 'content' keys
  */
-function content_parse_frontmatter(string $markdown): array {
+function content_parse_frontmatter(string $markdown): array
+{
     $metadata = [];
     $content = $markdown;
 
@@ -185,7 +188,8 @@ function content_parse_frontmatter(string $markdown): array {
  * @param string $markdown Markdown content
  * @return string HTML output
  */
-function content_render_markdown(string $markdown): string {
+function content_render_markdown(string $markdown): string
+{
     $parsedown = new \ParsedownExtra();
 
     // Enable security features
@@ -213,7 +217,8 @@ function content_render_markdown(string $markdown): string {
  * @param string $path Content path
  * @return array|false Array with 'metadata' and 'html' keys, or false if not found
  */
-function content_load(string $path): array|false {
+function content_load(string $path): array|false
+{
     $file_path = content_get_file_path($path);
 
     if ($file_path === false) {
@@ -246,7 +251,8 @@ function content_load(string $path): array|false {
  * @param string $default Default title
  * @return string Page title
  */
-function content_get_title(array $metadata, string $default = 'Relay'): string {
+function content_get_title(array $metadata, string $default = 'Relay'): string
+{
     return $metadata['title'] ?? $default;
 }
 
@@ -256,7 +262,8 @@ function content_get_title(array $metadata, string $default = 'Relay'): string {
  * @param string $path Directory path (relative to content dir)
  * @return array Array of content file paths
  */
-function content_list_files(string $path = ''): array {
+function content_list_files(string $path = ''): array
+{
     $sanitized = content_sanitize_path($path);
 
     if ($sanitized === false) {
