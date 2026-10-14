@@ -1,5 +1,7 @@
 <?php
 
+require_once __DIR__ . '/path.php';
+
 /**
  * Content Management Library
  *
@@ -45,7 +47,7 @@ function content_sanitize_path(string $path): string|false
         }
 
         // Only allow alphanumeric, dash, underscore
-        if (!preg_match('/^[a-zA-Z0-9_-]+$/', $part)) {
+        if (!relay_path_is_valid_identifier($part)) {
             return false;
         }
 
@@ -79,35 +81,22 @@ function content_get_file_path(string $path): string|false
         return false;
     }
 
-    // Get the real content directory path for security checks
-    $content_dir_real = realpath(RELAY_CONTENT_DIR);
-
-    if ($content_dir_real === false) {
-        return false; // Content directory doesn't exist
-    }
-
     // STAGE 1: Try direct file path first (e.g., content/about.md)
     // This maintains backward compatibility - existing flat files take precedence
     $direct_file_path = RELAY_CONTENT_DIR . '/' . $sanitized . '.md';
-    $direct_real_path = realpath($direct_file_path);
+    $direct_real_path = relay_path_resolve_within(RELAY_CONTENT_DIR, $direct_file_path);
 
     if ($direct_real_path !== false) {
-        // Verify the resolved path is within content directory
-        if (strpos($direct_real_path, $content_dir_real) === 0) {
-            return $direct_real_path;
-        }
+        return $direct_real_path;
     }
 
     // STAGE 2: Try directory index path (e.g., content/about/index.md)
     // This enables hierarchical content organization
     $index_file_path = RELAY_CONTENT_DIR . '/' . $sanitized . '/index.md';
-    $index_real_path = realpath($index_file_path);
+    $index_real_path = relay_path_resolve_within(RELAY_CONTENT_DIR, $index_file_path);
 
     if ($index_real_path !== false) {
-        // Verify the resolved path is within content directory
-        if (strpos($index_real_path, $content_dir_real) === 0) {
-            return $index_real_path;
-        }
+        return $index_real_path;
     }
 
     // Neither path found or both failed security check

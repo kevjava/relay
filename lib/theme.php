@@ -1,6 +1,7 @@
 <?php
 
 require_once __DIR__ . '/json.php';
+require_once __DIR__ . '/path.php';
 require_once __DIR__ . '/settings.php';
 
 /**
@@ -26,7 +27,7 @@ function theme_get_active_dir(): string
     $active_theme = settings_get('active_theme', 'default');
 
     // Sanitize theme name
-    if (!preg_match('/^[a-zA-Z0-9_-]+$/', $active_theme)) {
+    if (!relay_path_is_valid_identifier($active_theme)) {
         $active_theme = 'default';
     }
 
@@ -61,7 +62,7 @@ function theme_sanitize_template_name(string $template): string|false
     }
 
     // Only allow alphanumeric, dash, underscore (no slashes!)
-    if (!preg_match('/^[a-zA-Z0-9_-]+$/', $template)) {
+    if (!relay_path_is_valid_identifier($template)) {
         return false;
     }
 
@@ -87,25 +88,10 @@ function theme_get_template_path(string $template): string|false
         return false;
     }
 
-    // Build template path
-    $template_path = theme_get_active_dir() . '/templates/' . $sanitized . '.php';
+    $templates_directory = theme_get_active_dir() . '/templates';
+    $template_path = $templates_directory . '/' . $sanitized . '.php';
 
-    // Resolve real path
-    $real_path = realpath($template_path);
-
-    // If file doesn't exist, return false
-    if ($real_path === false) {
-        return false;
-    }
-
-    // Verify the resolved path is within theme/templates directory
-    $theme_templates_real = realpath(theme_get_active_dir() . '/templates');
-
-    if ($theme_templates_real === false || !str_starts_with($real_path, $theme_templates_real)) {
-        return false;
-    }
-
-    return $real_path;
+    return relay_path_resolve_within($templates_directory, $template_path);
 }
 
 /**
@@ -206,7 +192,7 @@ function theme_list_available(): array
 function theme_get_metadata(string $theme_name): array|false
 {
     // Sanitize theme name
-    if (!preg_match('/^[a-zA-Z0-9_-]+$/', $theme_name)) {
+    if (!relay_path_is_valid_identifier($theme_name)) {
         return false;
     }
 
@@ -240,7 +226,7 @@ function theme_get_metadata(string $theme_name): array|false
 function theme_validate(string $theme_name): bool
 {
     // Sanitize theme name
-    if (!preg_match('/^[a-zA-Z0-9_-]+$/', $theme_name)) {
+    if (!relay_path_is_valid_identifier($theme_name)) {
         return false;
     }
 
@@ -317,7 +303,7 @@ function theme_set_active(string $theme_name): bool
 function theme_load_lib(string $library): bool
 {
     // Sanitize library name (alphanumeric, dash, underscore only)
-    if (!preg_match('/^[a-zA-Z0-9_-]+$/', $library)) {
+    if (!relay_path_is_valid_identifier($library)) {
         return false;
     }
 
