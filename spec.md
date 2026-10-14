@@ -269,6 +269,8 @@ Menus are stored as JSON files in `config/` and rendered as nested navigation st
 - menu items may include recursive `children`
 - menu rendering marks active links for exact matches and descendant sections
 - menu URLs are prefixed with `url_base()` during rendering
+- core and theme renderers share prepared labels, URLs, active state, and normalized children through `menu_prepare_render_item()`
+- each renderer retains ownership of its HTML structure, CSS classes, recursion, and final URL escaping
 
 #### Implemented functions
 
@@ -276,6 +278,7 @@ Menus are stored as JSON files in `config/` and rendered as nested navigation st
 - `menu_save(string $menu_name, array $menu_data): bool`
 - `menu_validate(array $menu_data): bool`
 - `menu_is_active(string $url, string $current_path): bool`
+- `menu_prepare_render_item(array $item, string $current_path): array`
 - `menu_render(array $menu_data, string $current_path = '', int $depth = 0): string`
 - `menu_render_header(array $menu_data, string $current_path = ''): string`
 - `menu_list(): array`
@@ -331,8 +334,10 @@ Relay includes a multi-theme system. Themes live under `themes/`, expose metadat
 
 #### Implemented behavior
 
-- active theme is read from `config/settings.json`
-- invalid or missing theme names fall back to `default`
+- configured active theme name is read from `config/settings.json`
+- `theme_get_active()` preserves the configured name
+- effective directory lookup falls back to `default` when the configured identifier is invalid or its directory is missing
+- an existing theme directory remains effective even when full `theme_validate()` structure checks fail; activation still requires full validation
 - template names are sanitized to `[a-zA-Z0-9_-]+`
 - theme and template identifiers delegate common validation to `relay_path_is_valid_identifier()`
 - resolved template files delegate canonical containment to `relay_path_resolve_within()`
@@ -345,6 +350,7 @@ Relay includes a multi-theme system. Themes live under `themes/`, expose metadat
 
 #### Implemented functions
 
+- `theme_resolve_active(): array`
 - `theme_get_active_dir(): string`
 - `theme_sanitize_template_name(string $template): string|false`
 - `theme_get_template_path(string $template): string|false`

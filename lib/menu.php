@@ -122,6 +122,25 @@ function menu_is_active(string $url, string $current_path): bool
 }
 
 /**
+ * Prepare shared values used when rendering a menu item.
+ *
+ * @return array{label: string, url: string, href: string, is_active: bool, children: array, has_children: bool}
+ */
+function menu_prepare_render_item(array $item, string $current_path): array
+{
+    $children = isset($item['children']) && is_array($item['children']) ? $item['children'] : [];
+
+    return [
+        'label' => htmlspecialchars($item['label'], ENT_QUOTES, 'UTF-8'),
+        'url' => $item['url'],
+        'href' => url_base($item['url']),
+        'is_active' => menu_is_active($item['url'], $current_path),
+        'children' => $children,
+        'has_children' => !empty($children),
+    ];
+}
+
+/**
  * Render a menu as HTML
  *
  * Themes can override this function by defining it in themes/{theme}/lib/menu.php.
@@ -142,29 +161,26 @@ if (!function_exists('menu_render')) {
         $html = '<ul class="relay-menu relay-menu-depth-' . $depth . '">';
 
         foreach ($menu_data as $item) {
-            $label = htmlspecialchars($item['label'], ENT_QUOTES, 'UTF-8');
-            $url = htmlspecialchars($item['url'], ENT_QUOTES, 'UTF-8');
-            $is_active = menu_is_active($item['url'], $current_path);
-            $has_children = isset($item['children']) && is_array($item['children']) && !empty($item['children']);
+            $render_item = menu_prepare_render_item($item, $current_path);
 
             $classes = ['relay-menu-item'];
 
-            if ($is_active) {
+            if ($render_item['is_active']) {
                 $classes[] = 'active';
             }
 
-            if ($has_children) {
+            if ($render_item['has_children']) {
                 $classes[] = 'has-children';
             }
 
             $class_attr = implode(' ', $classes);
 
             $html .= '<li class="' . $class_attr . '">';
-            $html .= '<a href="' . url_base($item['url']) . '">' . $label . '</a>';
+            $html .= '<a href="' . $render_item['href'] . '">' . $render_item['label'] . '</a>';
 
             // Render children if present
-            if ($has_children) {
-                $html .= menu_render($item['children'], $current_path, $depth + 1);
+            if ($render_item['has_children']) {
+                $html .= menu_render($render_item['children'], $current_path, $depth + 1);
             }
 
             $html .= '</li>';
@@ -196,13 +212,11 @@ if (!function_exists('menu_render_header')) {
         $html = '<nav class="relay-header-menu"><ul>';
 
         foreach ($menu_data as $item) {
-            $label = htmlspecialchars($item['label'], ENT_QUOTES, 'UTF-8');
-            $url = htmlspecialchars($item['url'], ENT_QUOTES, 'UTF-8');
-            $is_active = menu_is_active($item['url'], $current_path);
+            $render_item = menu_prepare_render_item($item, $current_path);
 
-            $class = $is_active ? ' class="active"' : '';
+            $class = $render_item['is_active'] ? ' class="active"' : '';
 
-            $html .= '<li' . $class . '><a href="' . url_base($item['url']) . '">' . $label . '</a></li>';
+            $html .= '<li' . $class . '><a href="' . $render_item['href'] . '">' . $render_item['label'] . '</a></li>';
         }
 
         $html .= '</ul></nav>';

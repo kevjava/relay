@@ -66,6 +66,13 @@ final class ThemeTest extends FilesystemTestCase
         $this->assertContains('uswds', $themes);
         $this->assertContains($this->themeName, $themes);
 
+        $this->assertSame(
+            [
+                'configured_name' => $this->themeName,
+                'effective_directory' => $this->themeDir,
+            ],
+            theme_resolve_active()
+        );
         $this->assertSame($this->themeName, theme_get_active());
         $this->assertSame($this->themeDir, theme_get_active_dir());
         $this->assertTrue(theme_set_active('default'));
@@ -81,7 +88,39 @@ final class ThemeTest extends FilesystemTestCase
             'timezone' => 'America/New_York',
         ]);
 
+        $this->assertSame('../invalid', theme_get_active());
         $this->assertSame(RELAY_THEMES_DIR . '/default', theme_get_active_dir());
+        $this->assertSame(realpath(RELAY_THEMES_DIR . '/default/templates/main.php'), theme_get_template_path('main'));
+    }
+
+    public function testMissingConfiguredThemePreservesNameAndFallsBackToDefaultDirectory(): void
+    {
+        $this->writeJsonFile(RELAY_SETTINGS_FILE, [
+            'active_theme' => 'missing-theme',
+            'site_name' => 'Relay CMS',
+            'timezone' => 'America/New_York',
+        ]);
+
+        $this->assertSame('missing-theme', theme_get_active());
+        $this->assertSame(RELAY_THEMES_DIR . '/default', theme_get_active_dir());
+    }
+
+    public function testExistingIncompleteThemeRemainsEffectiveButCannotBeActivated(): void
+    {
+        $incompleteThemeName = 'phpunit-incomplete-theme';
+        $incompleteThemeDir = RELAY_THEMES_DIR . '/' . $incompleteThemeName;
+        $this->trackPathForCleanup($incompleteThemeDir);
+        $this->ensureDirectory($incompleteThemeDir);
+        $this->writeJsonFile(RELAY_SETTINGS_FILE, [
+            'active_theme' => $incompleteThemeName,
+            'site_name' => 'Relay CMS',
+            'timezone' => 'America/New_York',
+        ]);
+
+        $this->assertSame($incompleteThemeName, theme_get_active());
+        $this->assertSame($incompleteThemeDir, theme_get_active_dir());
+        $this->assertFalse(theme_validate($incompleteThemeName));
+        $this->assertFalse(theme_set_active($incompleteThemeName));
     }
 
     public function testTemplateLookupRejectsSymlinkOutsideTemplatesDirectory(): void
