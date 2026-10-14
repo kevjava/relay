@@ -11,6 +11,7 @@ final class DependencyTest extends TestCase
         $libraries = [
             'auth.php' => 'auth_login',
             'menu.php' => 'menu_render',
+            'path.php' => 'relay_path_resolve_within',
             'theme.php' => 'theme_get_active',
             'content.php' => 'content_load',
         ];

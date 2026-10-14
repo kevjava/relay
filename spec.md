@@ -71,6 +71,7 @@ The Docker image:
 │   ├── content.php
 │   ├── csrf.php
 │   ├── menu.php
+│   ├── path.php
 │   ├── settings.php
 │   ├── theme.php
 │   └── url.php
@@ -98,6 +99,18 @@ Relay is organized around these core systems:
 3. **JSON-backed menu management**
 4. **Theme-based template rendering**
 5. **Base-path-aware URL generation** for root or subdirectory deployment
+6. **Shared identifier validation and canonical path containment** for security-sensitive filesystem lookups
+
+### Shared Path Safety (`lib/path.php`)
+
+Content and theme filesystem lookups use shared primitives for the security-sensitive operations they have in common:
+
+- `relay_path_is_valid_identifier(string $value): bool` accepts a non-empty identifier containing only ASCII letters, numbers, dashes, and underscores.
+- `relay_path_resolve_within(string $allowed_directory, string $candidate_path): string|false` resolves both paths with `realpath()` and returns the canonical candidate only when the allowed path is an existing directory and the candidate is that directory or a descendant separated by a directory boundary.
+
+Canonical containment rejects missing paths, symlinks that resolve outside the allowed directory, and sibling-prefix collisions such as an `allowed-escape` directory when the allowed root is `allowed`.
+
+The shared functions provide validation and containment primitives only. Content and theme wrappers retain their distinct defaults, normalization rules, nesting policies, lookup precedence, and fallback behavior.
 
 ## Core Libraries
 
@@ -200,6 +213,8 @@ Relay loads Markdown content from `content/`, extracts simple YAML-style frontma
 - empty path resolves to `index`
 - content lookup supports both flat and hierarchical structures
 - direct file path has precedence over nested `index.md`
+- each content path segment delegates identifier validation to `relay_path_is_valid_identifier()`
+- resolved Markdown candidates delegate canonical containment to `relay_path_resolve_within()`
 - frontmatter parser supports simple `key: value` lines
 - Markdown is rendered with `ParsedownExtra`
 - raw HTML in Markdown is currently **allowed**
@@ -319,6 +334,8 @@ Relay includes a multi-theme system. Themes live under `themes/`, expose metadat
 - active theme is read from `config/settings.json`
 - invalid or missing theme names fall back to `default`
 - template names are sanitized to `[a-zA-Z0-9_-]+`
+- theme and template identifiers delegate common validation to `relay_path_is_valid_identifier()`
+- resolved template files delegate canonical containment to `relay_path_resolve_within()`
 - templates are PHP files with `.php` extension
 - pages can choose a template via content frontmatter:
   - `template: main`
@@ -569,9 +586,8 @@ Require all denied
 ### Implemented protections
 
 1. **Path traversal prevention**
-   - content paths are sanitized
-   - template names are sanitized
-   - resolved content and template paths are checked against expected base directories
+
+    Content paths and template names retain separate policy wrappers. Common identifiers are restricted to ASCII letters, numbers, dashes, and underscores. Resolved content and template paths must be the canonical base directory or a directory-boundary-separated descendant, rejecting symlink escapes and sibling paths that only share the base directory's string prefix.
 
 2. **CSRF protection**
    - all state-changing admin forms use CSRF tokens

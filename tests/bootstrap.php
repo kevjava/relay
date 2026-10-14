@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 require_once __DIR__ . '/../vendor/autoload.php';
 require_once __DIR__ . '/../lib/json.php';
+require_once __DIR__ . '/../lib/path.php';
 require_once __DIR__ . '/../lib/url.php';
 require_once __DIR__ . '/../lib/session.php';
 require_once __DIR__ . '/../lib/auth.php';
