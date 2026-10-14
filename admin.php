@@ -297,18 +297,18 @@ if ($action !== 'login') {
 
                                 <div class="relay-form-group">
                                     <label for="old_password">Current Password</label>
-                                    <input type="password" id="old_password" name="old_password" required>
+                                    <input type="password" id="old_password" name="old_password" autocomplete="current-password" required>
                                 </div>
 
                                 <div class="relay-form-group">
                                     <label for="new_password">New Password</label>
-                                    <input type="password" id="new_password" name="new_password" required minlength="8">
+                                    <input type="password" id="new_password" name="new_password" autocomplete="new-password" required minlength="8">
                                     <small>Minimum 8 characters</small>
                                 </div>
 
                                 <div class="relay-form-group">
                                     <label for="confirm_password">Confirm New Password</label>
-                                    <input type="password" id="confirm_password" name="confirm_password" required minlength="8">
+                                    <input type="password" id="confirm_password" name="confirm_password" autocomplete="new-password" required minlength="8">
                                 </div>
 
                                 <button type="submit" class="relay-button relay-button-primary">Change Password</button>
