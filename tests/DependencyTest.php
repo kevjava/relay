@@ -43,6 +43,32 @@ final class DependencyTest extends TestCase
         $this->assertSame('parsed', $this->runPhp($script));
     }
 
+    public function testThemeMenuOverridesRemainAuthoritativeWhenCoreLoadsAfterward(): void
+    {
+        $overridePath = dirname(__DIR__) . '/themes/uswds/lib/menu.php';
+        $corePath = dirname(__DIR__) . '/lib/menu.php';
+        $menuData = var_export([
+            [
+                'label' => 'Docs & Guides',
+                'url' => '/docs',
+                'children' => [
+                    ['label' => 'API "Reference"', 'url' => '/docs/api'],
+                ],
+            ],
+        ], true);
+        $script = "\$_SERVER['SCRIPT_NAME'] = '/index.php';"
+            . 'require_once ' . var_export($overridePath, true) . ';'
+            . 'require_once ' . var_export($corePath, true) . ';'
+            . '$sidebar = menu_render(' . $menuData . ", '/docs/api');"
+            . '$header = menu_render_header(' . $menuData . ", '/docs/api');"
+            . "echo str_contains(\$sidebar, 'usa-sidenav__sublist')"
+            . " && str_contains(\$header, 'usa-nav__submenu')"
+            . " && str_contains(\$header, 'API &quot;Reference&quot;')"
+            . " && str_contains(\$header, 'class=\"usa-current\"') ? 'override' : 'core';";
+
+        $this->assertSame('override', $this->runPhp($script));
+    }
+
     private function runPhp(string $script): string
     {
         $command = escapeshellarg(PHP_BINARY) . ' -r ' . escapeshellarg($script);

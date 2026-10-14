@@ -30,21 +30,19 @@ if (!function_exists('menu_render')) {
         $html = '<ul class="usa-sidenav' . ($depth > 0 ? '__sublist' : '') . '">';
 
         foreach ($menu_data as $item) {
-            $label = htmlspecialchars($item['label'], ENT_QUOTES, 'UTF-8');
-            $url = htmlspecialchars(url_base($item['url']), ENT_QUOTES, 'UTF-8');
-            $is_active = menu_is_active($item['url'], $current_path);
-            $has_children = isset($item['children']) && is_array($item['children']) && !empty($item['children']);
+            $render_item = menu_prepare_render_item($item, $current_path);
+            $url = htmlspecialchars($render_item['href'], ENT_QUOTES, 'UTF-8');
 
             $html .= '<li class="usa-sidenav__item">';
             $html .= '<a href="' . $url . '"';
-            if ($is_active) {
+            if ($render_item['is_active']) {
                 $html .= ' class="usa-current"';
             }
-            $html .= '>' . $label . '</a>';
+            $html .= '>' . $render_item['label'] . '</a>';
 
             // Render children recursively
-            if ($has_children) {
-                $html .= menu_render($item['children'], $current_path, $depth + 1);
+            if ($render_item['has_children']) {
+                $html .= menu_render($render_item['children'], $current_path, $depth + 1);
             }
 
             $html .= '</li>';
@@ -80,50 +78,47 @@ if (!function_exists('menu_render_header')) {
         $section_counter = 0;
 
         foreach ($menu_data as $item) {
-            $label = htmlspecialchars($item['label'], ENT_QUOTES, 'UTF-8');
-            $url = htmlspecialchars(url_base($item['url']), ENT_QUOTES, 'UTF-8');
-            $is_active = menu_is_active($item['url'], $current_path);
-            $has_children = isset($item['children']) && is_array($item['children']) && !empty($item['children']);
+            $render_item = menu_prepare_render_item($item, $current_path);
+            $url = htmlspecialchars($render_item['href'], ENT_QUOTES, 'UTF-8');
 
             $html .= '<li class="usa-nav__primary-item">';
 
-            if ($has_children) {
+            if ($render_item['has_children']) {
                 // Item with children - use button with accordion
                 $section_counter++;
                 $section_id = 'nav-section-' . $section_counter;
 
                 $html .= '<button class="usa-accordion__button usa-nav__link';
-                if ($is_active) {
+                if ($render_item['is_active']) {
                     $html .= ' usa-current';
                 }
                 $html .= '" aria-expanded="false" aria-controls="' . $section_id . '">';
-                $html .= '<span>' . $label . '</span>';
+                $html .= '<span>' . $render_item['label'] . '</span>';
                 $html .= '</button>';
 
                 // Render submenu
                 $html .= '<ul id="' . $section_id . '" class="usa-nav__submenu">';
-                foreach ($item['children'] as $child) {
-                    $child_label = htmlspecialchars($child['label'], ENT_QUOTES, 'UTF-8');
-                    $child_url = htmlspecialchars(url_base($child['url']), ENT_QUOTES, 'UTF-8');
-                    $child_is_active = menu_is_active($child['url'], $current_path);
+                foreach ($render_item['children'] as $child) {
+                    $child_render_item = menu_prepare_render_item($child, $current_path);
+                    $child_url = htmlspecialchars($child_render_item['href'], ENT_QUOTES, 'UTF-8');
 
                     $html .= '<li class="usa-nav__submenu-item">';
                     $html .= '<a href="' . $child_url . '"';
-                    if ($child_is_active) {
+                    if ($child_render_item['is_active']) {
                         $html .= ' class="usa-current"';
                     }
-                    $html .= '>' . $child_label . '</a>';
+                    $html .= '>' . $child_render_item['label'] . '</a>';
                     $html .= '</li>';
                 }
                 $html .= '</ul>';
             } else {
                 // Item without children - simple link
                 $html .= '<a class="usa-nav__link';
-                if ($is_active) {
+                if ($render_item['is_active']) {
                     $html .= ' usa-current';
                 }
                 $html .= '" href="' . $url . '">';
-                $html .= '<span>' . $label . '</span>';
+                $html .= '<span>' . $render_item['label'] . '</span>';
                 $html .= '</a>';
             }
 

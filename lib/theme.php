@@ -16,6 +16,29 @@ require_once __DIR__ . '/settings.php';
 define('RELAY_THEMES_DIR', __DIR__ . '/../themes');
 
 /**
+ * Resolve configured and effective active theme information.
+ *
+ * @return array{configured_name: string, effective_directory: string}
+ */
+function theme_resolve_active(): array
+{
+    $configured_theme = settings_get('active_theme', 'default');
+    $effective_theme = relay_path_is_valid_identifier($configured_theme)
+        ? $configured_theme
+        : 'default';
+    $effective_directory = RELAY_THEMES_DIR . '/' . $effective_theme;
+
+    if (!is_dir($effective_directory)) {
+        $effective_directory = RELAY_THEMES_DIR . '/default';
+    }
+
+    return [
+        'configured_name' => $configured_theme,
+        'effective_directory' => $effective_directory,
+    ];
+}
+
+/**
  * Get the active theme directory path
  *
  * Returns the active theme directory based on settings.json.
@@ -24,22 +47,7 @@ define('RELAY_THEMES_DIR', __DIR__ . '/../themes');
  */
 function theme_get_active_dir(): string
 {
-    $active_theme = settings_get('active_theme', 'default');
-
-    // Sanitize theme name
-    if (!relay_path_is_valid_identifier($active_theme)) {
-        $active_theme = 'default';
-    }
-
-    $theme_path = RELAY_THEMES_DIR . '/' . $active_theme;
-
-    // Verify theme directory exists
-    if (!is_dir($theme_path)) {
-        // Fallback to default theme
-        $theme_path = RELAY_THEMES_DIR . '/default';
-    }
-
-    return $theme_path;
+    return theme_resolve_active()['effective_directory'];
 }
 
 /**
@@ -269,7 +277,7 @@ function theme_validate(string $theme_name): bool
  */
 function theme_get_active(): string
 {
-    return settings_get('active_theme', 'default');
+    return theme_resolve_active()['configured_name'];
 }
 
 /**
