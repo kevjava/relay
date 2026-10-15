@@ -3,8 +3,6 @@ title: Getting Started
 date: 2024-12-17
 ---
 
-# Getting Started with Relay
-
 This guide will help you get up and running with Relay in minutes.
 
 ## Installation
@@ -39,7 +37,7 @@ This is my content written in Markdown.
 
 ## Managing Menus
 
-1. Log in to the admin panel at `/admin.php`
+1. Log in through the deployment's `admin.php` endpoint
 2. Click on the menu you want to edit
 3. Add, remove, or reorder menu items
 4. Use the indent/outdent buttons to create nested menus
@@ -62,6 +60,6 @@ php admin-tools.php list-users
 
 ## Next Steps
 
-- Explore the [documentation](#) for advanced features
-- Customize the theme by editing `index.php`
-- Add your own CSS in `/assets/css/`
+- Read the [Theme Writer Guide](developer/themes) for advanced theme features
+- Create or customize a theme under `themes/{theme-name}/`
+- Use `url_base()` for links and assets so the site works in a subdirectory
