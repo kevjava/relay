@@ -6,7 +6,7 @@ For Relay's complete theme contract, read the [Theme Writer Guide](../../content
 
 ## Features
 
-- **USWDS 3.7 Compliant**: Uses official U.S. Web Design System components and styling
+- **Built with USWDS 3.7.1 assets**: Uses official U.S. Web Design System components and styling
 - **Accessibility-oriented**: Uses semantic landmarks, skip navigation, and visible framework focus styles
 - **Audit-ready foundation**: Designed to support WCAG and Section 508 review without claiming automatic conformance
 - **Responsive Design**: Mobile-first approach with responsive grid layout

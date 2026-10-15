@@ -441,7 +441,7 @@ The admin interface supports login, dashboard actions, menu editing, and theme s
 ### Authentication model
 
 - `action=login` is public
-- all other admin actions require `auth_require_login()`
+- authenticated admin actions require `auth_require_login()`; logout is handled separately and is idempotent
 
 ### Implemented POST actions
 
@@ -596,8 +596,9 @@ Require all denied
     Content paths and template names retain separate policy wrappers. Common identifiers are restricted to ASCII letters, numbers, dashes, and underscores. Resolved content and template paths must be the canonical base directory or a directory-boundary-separated descendant, rejecting symlink escapes and sibling paths that only share the base directory's string prefix.
 
 2. **CSRF protection**
-   - all state-changing admin forms use CSRF tokens
-   - AJAX menu saves require the same token
+
+    - Authenticated state-changing admin forms use CSRF tokens; public login and idempotent logout are handled separately.
+    - AJAX menu saves require the same token.
 
 3. **Session hardening**
    - session ID regeneration on login
@@ -627,7 +628,9 @@ The repository currently includes:
 - `README.md`
 - `SECURITY.md`
 - `CHANGELOG.md`
-- `CLAUDE.md`
+- `AGENTS.md`
+- developer guides under `content/developer/themes/`
+- bundled theme README files under `themes/`
 
 ## Known Limitations and Non-Goals in Current Code
 
@@ -639,7 +642,7 @@ The repository currently includes:
 - no plugin system
 - no theme marketplace
 - no built-in content versioning
-- no debug-mode error page toggle
+- no application-level debug-mode error toggle
 
 ## Functional Checklist for the Current Implementation
 
