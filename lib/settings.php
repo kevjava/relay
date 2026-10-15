@@ -21,7 +21,8 @@ function settings_load(): array
     $defaults = [
         'active_theme' => 'default',
         'site_name' => 'Relay CMS',
-        'timezone' => 'America/New_York'
+        'timezone' => 'America/New_York',
+        'session_timeout' => 1800
     ];
 
     $settings = relay_json_load(RELAY_SETTINGS_FILE);
@@ -69,6 +70,11 @@ function settings_validate(array $settings): bool
 
     // Validate active_theme format (alphanumeric, dash, underscore)
     if (!preg_match('/^[a-zA-Z0-9_-]+$/', $settings['active_theme'])) {
+        return false;
+    }
+
+    if (isset($settings['session_timeout'])
+        && (!is_int($settings['session_timeout']) || $settings['session_timeout'] <= 0)) {
         return false;
     }
 

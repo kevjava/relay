@@ -43,6 +43,10 @@ php admin-tools.php init
 
 During initialization, you'll be prompted to create an admin user.
 
+The inactivity timeout defaults to 30 minutes. To customize it, edit
+`config/settings.json` and set `session_timeout` to the desired number of
+seconds, for example `"session_timeout": 3600` for one hour.
+
 ### 2. Docker Setup
 
 ```bash
@@ -387,7 +391,6 @@ location /relay/ {
 - [ ] Change default admin credentials
 - [ ] Configure HTTPS/SSL
 - [ ] Set secure file permissions
-- [ ] Configure proper session timeout
 - [ ] Set up regular backups
 - [ ] Test all .htaccess protections
 - [ ] Review security headers
