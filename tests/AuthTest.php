@@ -8,6 +8,8 @@ final class AuthTest extends SessionTestCase
 {
     private static ?string $originalUsersJson = null;
     private static bool $usersFileExisted = false;
+    private static ?string $originalSettingsJson = null;
+    private static bool $settingsFileExisted = false;
 
     public static function setUpBeforeClass(): void
     {
@@ -15,6 +17,8 @@ final class AuthTest extends SessionTestCase
 
         self::$usersFileExisted = file_exists(RELAY_USERS_FILE);
         self::$originalUsersJson = self::$usersFileExisted ? file_get_contents(RELAY_USERS_FILE) : null;
+        self::$settingsFileExisted = file_exists(RELAY_SETTINGS_FILE);
+        self::$originalSettingsJson = self::$settingsFileExisted ? file_get_contents(RELAY_SETTINGS_FILE) : null;
     }
 
     public static function tearDownAfterClass(): void
@@ -23,6 +27,12 @@ final class AuthTest extends SessionTestCase
             file_put_contents(RELAY_USERS_FILE, self::$originalUsersJson);
         } elseif (file_exists(RELAY_USERS_FILE)) {
             unlink(RELAY_USERS_FILE);
+        }
+
+        if (self::$settingsFileExisted) {
+            file_put_contents(RELAY_SETTINGS_FILE, self::$originalSettingsJson);
+        } elseif (file_exists(RELAY_SETTINGS_FILE)) {
+            unlink(RELAY_SETTINGS_FILE);
         }
 
         parent::tearDownAfterClass();
@@ -105,6 +115,22 @@ final class AuthTest extends SessionTestCase
         $this->assertFalse(auth_check());
         $this->assertTrue($_SESSION['auth_session_expired']);
         $this->assertArrayNotHasKey('user_authenticated', $_SESSION);
+    }
+
+    public function testConfiguredSessionTimeoutExpiresAuthentication(): void
+    {
+        $settings = settings_load();
+        $settings['session_timeout'] = 60;
+        $this->assertTrue(settings_save($settings));
+
+        try {
+            $this->assertTrue(auth_login('admin', 'Secret123!'));
+            $_SESSION['user_last_activity'] = time() - 61;
+
+            $this->assertFalse(auth_check());
+        } finally {
+            file_put_contents(RELAY_SETTINGS_FILE, self::$originalSettingsJson);
+        }
     }
 
     public function testChangePasswordUpdatesStoredHash(): void

@@ -16,6 +16,7 @@ final class SettingsTest extends FilesystemTestCase
         $this->assertSame('default', $settings['active_theme']);
         $this->assertSame('Relay CMS', $settings['site_name']);
         $this->assertSame('America/New_York', $settings['timezone']);
+        $this->assertSame(1800, $settings['session_timeout']);
     }
 
     public function testSettingsValidateEnforcesRequiredStringFields(): void
@@ -35,6 +36,20 @@ final class SettingsTest extends FilesystemTestCase
         $this->assertFalse(settings_validate([
             'active_theme' => 'default',
             'site_name' => 'Relay CMS',
+        ]));
+
+        $this->assertTrue(settings_validate([
+            'active_theme' => 'default',
+            'site_name' => 'Relay CMS',
+            'timezone' => 'America/New_York',
+            'session_timeout' => 3600,
+        ]));
+
+        $this->assertFalse(settings_validate([
+            'active_theme' => 'default',
+            'site_name' => 'Relay CMS',
+            'timezone' => 'America/New_York',
+            'session_timeout' => 0,
         ]));
     }
 

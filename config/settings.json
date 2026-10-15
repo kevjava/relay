@@ -1,5 +1,6 @@
 {
     "active_theme": "uswds",
     "site_name": "Relay CMS",
-    "timezone": "America/New_York"
+    "timezone": "America/New_York",
+    "session_timeout": 1800
 }

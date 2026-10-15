@@ -2,6 +2,7 @@
 
 require_once __DIR__ . '/session.php';
 require_once __DIR__ . '/json.php';
+require_once __DIR__ . '/settings.php';
 require_once __DIR__ . '/url.php';
 
 /**
@@ -23,6 +24,16 @@ define('RELAY_LOGIN_LOCKOUT_TIME', 900); // 15 minutes in seconds
 function auth_init_session(): void
 {
     relay_init_session();
+}
+
+/**
+ * Get the configured session timeout in seconds.
+ */
+function auth_get_session_timeout(): int
+{
+    $timeout = settings_get('session_timeout', RELAY_SESSION_TIMEOUT);
+
+    return is_int($timeout) && $timeout > 0 ? $timeout : RELAY_SESSION_TIMEOUT;
 }
 
 /**
@@ -230,7 +241,7 @@ function auth_check(): bool
     if (isset($_SESSION['user_last_activity'])) {
         $inactive_time = time() - $_SESSION['user_last_activity'];
 
-        if ($inactive_time > RELAY_SESSION_TIMEOUT) {
+        if ($inactive_time > auth_get_session_timeout()) {
             auth_logout(true); // Pass true to indicate session expiry
             return false;
         }

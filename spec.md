@@ -124,7 +124,8 @@ Relay supports file-based multi-user authentication backed by `config/users.json
 
 - usernames must match `^[a-zA-Z0-9_]+$`
 - passwords are hashed with `PASSWORD_ARGON2ID` when available, otherwise `PASSWORD_BCRYPT`
-- session timeout is **30 minutes**
+- session timeout defaults to **30 minutes** and can be configured in
+  `config/settings.json` with the `session_timeout` value in seconds
 - failed login attempts are rate-limited to **5 attempts per 15 minutes per session**
 - session ID is regenerated on successful login
 - session cookies are configured with:
@@ -318,7 +319,8 @@ Relay stores site-wide settings in `config/settings.json`.
 {
   "active_theme": "default",
   "site_name": "Relay CMS",
-  "timezone": "America/New_York"
+  "timezone": "America/New_York",
+  "session_timeout": 1800
 }
 ```
 

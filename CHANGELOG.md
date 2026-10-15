@@ -9,6 +9,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **Configurable Session Timeout** - Administrators can set `session_timeout`
+  in `config/settings.json` in seconds; the default remains 30 minutes.
+
 - **Drag-and-Drop Menu Editor** - Reorder menu items within their existing parent
   - Vendored and pinned SortableJS 1.15.7 under `assets/vendor/sortablejs/`
   - Dedicated drag handles with insertion, chosen-item, and ghost-item feedback
