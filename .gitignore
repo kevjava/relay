@@ -1,6 +1,5 @@
 # Composer dependencies
 /vendor/
-composer.lock
 
 # Configuration files with sensitive data
 /config/users.json
