@@ -489,6 +489,10 @@ server {
 For temporary development troubleshooting, use PHP or web-server error logs.
 Relay does not provide a supported application-level debug-mode switch.
 
+The Docker image uses PHP's production `php.ini`, so errors are not shown in the
+browser. They are written to the container log; view them with
+`docker logs relay-cms` (or `podman logs relay-cms`).
+
 ## Development
 
 ### File Structure

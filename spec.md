@@ -33,6 +33,8 @@ The Docker image:
 - installs Composer
 - installs `libsodium`
 - runs `composer install --no-dev --optimize-autoloader`
+- uses PHP's production `php.ini` (errors are logged, not displayed) with
+  session and `expose_php` hardening in `conf.d/security.ini`
 
 ## Current Directory Structure
 

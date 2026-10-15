@@ -30,8 +30,10 @@ RUN chown -R www-data:www-data /var/www/html \
     && chmod -R 775 /var/www/html/config \
     && chmod -R 775 /var/www/html/content
 
-# Configure PHP
-RUN echo "session.cookie_httponly = 1" >> /usr/local/etc/php/conf.d/security.ini \
+# Configure PHP: start from the production php.ini (display_errors off, errors
+# logged to stderr) and layer the security settings on top via conf.d
+RUN cp "$PHP_INI_DIR/php.ini-production" "$PHP_INI_DIR/php.ini" \
+    && echo "session.cookie_httponly = 1" >> /usr/local/etc/php/conf.d/security.ini \
     && echo "session.cookie_samesite = Strict" >> /usr/local/etc/php/conf.d/security.ini \
     && echo "session.use_strict_mode = 1" >> /usr/local/etc/php/conf.d/security.ini \
     && echo "expose_php = Off" >> /usr/local/etc/php/conf.d/security.ini
