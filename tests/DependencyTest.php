@@ -53,8 +53,11 @@ final class DependencyTest extends TestCase
                 'url' => '/docs',
                 'children' => [
                     ['label' => 'API "Reference"', 'url' => '/docs/api'],
+                    ['label' => 'External', 'url' => 'https://example.test/docs'],
+                    ['label' => 'Details', 'url' => '#details'],
                 ],
             ],
+            ['label' => 'Unsafe', 'url' => 'javascript:alert(1)'],
         ], true);
         $script = "\$_SERVER['SCRIPT_NAME'] = '/index.php';"
             . 'require_once ' . var_export($overridePath, true) . ';'
@@ -64,6 +67,15 @@ final class DependencyTest extends TestCase
             . "echo str_contains(\$sidebar, 'usa-sidenav__sublist')"
             . " && str_contains(\$header, 'usa-nav__submenu')"
             . " && str_contains(\$header, 'API &quot;Reference&quot;')"
+            . " && str_contains(\$sidebar, 'href=\"/relay/docs\"')"
+            . " && str_contains(\$sidebar, 'href=\"https://example.test/docs\"')"
+            . " && str_contains(\$sidebar, 'href=\"#details\"')"
+            . " && str_contains(\$sidebar, 'href=\"#\"')"
+            . " && str_contains(\$header, 'href=\"https://example.test/docs\"')"
+            . " && str_contains(\$header, 'href=\"#details\"')"
+            . " && str_contains(\$header, 'href=\"#\"')"
+            . " && !str_contains(\$sidebar, 'javascript:')"
+            . " && !str_contains(\$header, 'javascript:')"
             . " && str_contains(\$header, 'class=\"usa-current\"') ? 'override' : 'core';";
 
         $this->assertSame('override', $this->runPhp($script));

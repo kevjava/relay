@@ -176,7 +176,7 @@ if (!function_exists('menu_render')) {
             $class_attr = implode(' ', $classes);
 
             $html .= '<li class="' . $class_attr . '">';
-            $html .= '<a href="' . $render_item['href'] . '">' . $render_item['label'] . '</a>';
+            $html .= '<a href="' . htmlspecialchars($render_item['href'], ENT_QUOTES, 'UTF-8') . '">' . $render_item['label'] . '</a>';
 
             // Render children if present
             if ($render_item['has_children']) {
