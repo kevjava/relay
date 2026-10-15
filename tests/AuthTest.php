@@ -129,7 +129,11 @@ final class AuthTest extends SessionTestCase
 
             $this->assertFalse(auth_check());
         } finally {
-            file_put_contents(RELAY_SETTINGS_FILE, self::$originalSettingsJson);
+            if (self::$settingsFileExisted) {
+                file_put_contents(RELAY_SETTINGS_FILE, self::$originalSettingsJson);
+            } elseif (file_exists(RELAY_SETTINGS_FILE)) {
+                unlink(RELAY_SETTINGS_FILE);
+            }
         }
     }
 
