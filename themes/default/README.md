@@ -1,6 +1,6 @@
 # Relay CMS Theme System
 
-This directory contains the theme system for Relay CMS. Templates are plain HTML files with PHP blocks that can be specified via markdown frontmatter.
+This directory contains the theme system for Relay CMS. Templates are PHP files containing HTML and PHP blocks that can be selected through Markdown frontmatter.
 
 For the current extension contract and a complete example, read the [Theme Writer Guide](../../content/developer/themes/index.md).
 
@@ -8,7 +8,7 @@ For the current extension contract and a complete example, read the [Theme Write
 
 ```text
 themes/default/
-├── templates/          # HTML template files
+├── templates/          # PHP template files
 │   ├── main.php       # Default template (three-column layout)
 │   └── simple.php     # Minimal template example
 ├── css/               # Theme-specific stylesheets
@@ -111,11 +111,11 @@ chmod 644 themes/default/templates/my-template.php
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title><?php echo htmlspecialchars($page_title, ENT_QUOTES, 'UTF-8'); ?></title>
-    <link rel="stylesheet" href="/assets/css/relay.css">
+    <link rel="stylesheet" href="<?php echo url_base('/assets/css/relay.css'); ?>">
 </head>
 <body>
     <header>
-        <h1><a href="/">My Site</a></h1>
+        <h1><a href="<?php echo url_base('/'); ?>">My Site</a></h1>
     </header>
 
     <main>
@@ -266,8 +266,8 @@ template: simple
    <?php echo htmlspecialchars($title, ENT_QUOTES, 'UTF-8'); ?>
    ```
 
-2. **Content HTML is already safe:**
-   Markdown is rendered by ParsedownExtra and can be output directly:
+2. **Content HTML is trusted:**
+    Markdown is rendered by ParsedownExtra and can be output directly because content is managed on the filesystem. Do not treat untrusted input as safe HTML:
 
    ```html
    <?php echo $content_html; ?>

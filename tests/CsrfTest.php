@@ -6,6 +6,18 @@ require_once __DIR__ . '/Support/SessionTestCase.php';
 
 final class CsrfTest extends SessionTestCase
 {
+    public function testCsrfBootstrapUsesSharedSecureSessionDefaults(): void
+    {
+        $this->assertSame(PHP_SESSION_NONE, session_status());
+
+        csrf_generate_token();
+
+        $this->assertSame(PHP_SESSION_ACTIVE, session_status());
+        $this->assertSame('1', ini_get('session.cookie_httponly'));
+        $this->assertSame('Strict', ini_get('session.cookie_samesite'));
+        $this->assertSame('1', ini_get('session.use_strict_mode'));
+    }
+
     public function testGenerateTokenStoresItInSessionAndValidationSucceeds(): void
     {
         $token = csrf_generate_token();

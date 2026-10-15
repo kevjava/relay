@@ -10,6 +10,8 @@ final class ContentTest extends FilesystemTestCase
     {
         $this->assertSame('index', content_sanitize_path(''));
         $this->assertSame('docs/getting-started', content_sanitize_path('/docs/getting-started/'));
+        $this->assertSame('docs/page', content_sanitize_path('//docs///page//'));
+        $this->assertSame('docs/page', content_sanitize_path("docs/\0page"));
         $this->assertFalse(content_sanitize_path('../secrets'));
         $this->assertFalse(content_sanitize_path('bad path'));
         $this->assertFalse(content_sanitize_path('docs/./page'));
@@ -46,6 +48,36 @@ final class ContentTest extends FilesystemTestCase
 
         $this->assertSame(realpath($directPath), $resolvedPath);
         $this->assertTrue(content_exists('phpunit-precedence'));
+    }
+
+    public function testGetFilePathFallsBackToDirectoryIndex(): void
+    {
+        $directory = RELAY_CONTENT_DIR . '/phpunit-index-fallback';
+        $indexPath = $directory . '/index.md';
+
+        $this->trackPathForCleanup($directory);
+        $this->writeFile($indexPath, '# Nested content');
+
+        $this->assertSame(realpath($indexPath), content_get_file_path('phpunit-index-fallback'));
+    }
+
+    public function testGetFilePathRejectsSymlinkOutsideContentDirectory(): void
+    {
+        if (!function_exists('symlink')) {
+            $this->markTestSkipped('Symbolic links are not supported by this PHP runtime.');
+        }
+
+        $outsidePath = sys_get_temp_dir() . '/relay-content-' . bin2hex(random_bytes(8)) . '.md';
+        $linkedPath = RELAY_CONTENT_DIR . '/phpunit-symlink-escape.md';
+        $this->trackPathForCleanup($outsidePath);
+        $this->trackPathForCleanup($linkedPath);
+        $this->writeFile($outsidePath, '# Outside content');
+
+        if (!symlink($outsidePath, $linkedPath)) {
+            $this->markTestSkipped('The test environment does not permit symbolic links.');
+        }
+
+        $this->assertFalse(content_get_file_path('phpunit-symlink-escape'));
     }
 
     public function testContentLoadRendersHtmlFromMarkdown(): void

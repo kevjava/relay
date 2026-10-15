@@ -6,7 +6,7 @@ Relay is a minimal, secure PHP-based content management system designed for gove
 
 ## Features
 
-- **Markdown-based content**: Write in simple Markdown with YAML frontmatter
+- **Markdown-based content**: Write in simple Markdown with YAML-style frontmatter
 - **Flexible content organization**: Supports both flat files and hierarchical directories with automatic fallback
 - **Theme system**: Flexible HTML templates with PHP for custom layouts
 - **No database required**: All data stored in JSON and Markdown files
@@ -160,7 +160,7 @@ This means you can gradually migrate from flat to hierarchical structure, or cho
 - Organize related content in subdirectories using `index.md` files
 - Use flat structure for standalone pages (about, contact, etc.)
 - Use hierarchical structure for content with multiple sub-pages (documentation, blog sections, etc.)
-- Always include frontmatter with at least a title
+- Include frontmatter with a title when a page needs a custom title or metadata
 - Keep file paths under 255 characters
 - Use only alphanumeric characters, hyphens, and underscores
 
@@ -270,7 +270,7 @@ Available themes are located in the `themes/` directory. Each theme contains:
 
 ### Editing Menus
 
-1. Log in to `/admin.php`
+1. Log in through the deployment's `admin.php` endpoint
 2. Click on the menu you want to edit (header-menu, left-menu, right-menu)
 3. Use the interface to:
    - **Add items**: Click "Add Item"
@@ -306,8 +306,8 @@ php admin-tools.php help
 
 ### User Roles
 
-- **admin**: Full access to all features
-- **editor**: Can edit menus and change own password
+- **admin** and **editor** roles are stored with each user
+- All authenticated users currently share the same admin interface permissions; broad role-based authorization is not implemented
 
 ## Security Considerations
 
@@ -349,11 +349,11 @@ Deploy as normal - Relay automatically detects root deployment and works immedia
 
 2. **Edit `.htaccess`** - Uncomment and set the `RewriteBase` directive:
 
-```apache
-# Subdirectory Deployment Configuration
-# If deploying to a subdirectory (e.g., /relay/ or /my-cms/), uncomment and set:
-RewriteBase /relay/
-```
+    ```apache
+    # Subdirectory Deployment Configuration
+    # If deploying to a subdirectory (e.g., /relay/ or /my-cms/), uncomment and set:
+    RewriteBase /relay/
+    ```
 
 3. **Done!** - All URLs automatically adjust to include the base path.
 
@@ -398,14 +398,11 @@ location /relay/ {
 
 ### Production Docker Setup
 
-Edit `docker-compose.yml` for production:
-
-```yaml
-environment:
-  - PHP_MEMORY_LIMIT=256M
-  - HTTPS=on  # If using HTTPS
-restart: always
-```
+The included Docker Compose file is intended as a development starting point. For
+production, configure TLS at the container or reverse-proxy layer, provide
+writable persistent storage for `config/` and `content/`, and set PHP limits in
+the image or PHP configuration. Compose environment variables alone do not
+configure HTTPS or PHP memory limits in the current image.
 
 ### nginx Configuration
 
@@ -421,7 +418,6 @@ server {
     # Security headers
     add_header X-Frame-Options "SAMEORIGIN" always;
     add_header X-Content-Type-Options "nosniff" always;
-    add_header X-XSS-Protection "1; mode=block" always;
 
     # Block access to sensitive directories
     location ~ ^/(config|content)/ {
@@ -490,14 +486,12 @@ server {
 
 ### Debug Mode
 
-Enable debug mode by setting in `index.php` or `admin.php`:
+For temporary development troubleshooting, use PHP or web-server error logs.
+Relay does not provide a supported application-level debug-mode switch.
 
-```php
-ini_set('display_errors', 1);
-error_reporting(E_ALL);
-```
-
-**WARNING**: Never enable debug mode in production!
+The Docker image uses PHP's production `php.ini`, so errors are not shown in the
+browser. They are written to the container log; view them with
+`docker logs relay-cms` (or `podman logs relay-cms`).
 
 ## Development
 
@@ -513,7 +507,7 @@ error_reporting(E_ALL);
 ├── docker-compose.yml     # Docker configuration
 ├── Dockerfile             # Docker image
 ├── .htaccess              # Apache configuration
-├── claude.md              # Context for Claude Code sessions
+├── AGENTS.md              # Repository guidance for coding agents
 ├── CHANGELOG.md           # Version history
 ├── lib/                   # Core libraries
 │   ├── auth.php           # Authentication
@@ -550,6 +544,19 @@ error_reporting(E_ALL);
 └── vendor/                # Composer dependencies
 ```
 
+### Library Loading
+
+Composer provides third-party dependencies only. Application entry points load
+Relay libraries explicitly, and each library declares its own application
+dependencies with top-level `require_once` statements. This keeps libraries
+safe to include directly and avoids relying on Composer or include order to
+define Relay functions.
+
+Theme library overrides are loaded before the corresponding core library so a
+theme can provide replacement implementations. Custom libraries that generate
+URLs should include `lib/url.php` and use `url_base()` for deployment-safe
+links.
+
 ### Customization
 
 **Templates**: Create custom templates in `themes/[theme-name]/templates/`. Each theme can have its own set of templates.
@@ -577,7 +584,7 @@ Contributions are welcome! Please read SECURITY.md for security-related contribu
 
 ## License
 
-MIT License - see LICENSE file for details
+This project is released under the MIT License.
 
 ## Support
 

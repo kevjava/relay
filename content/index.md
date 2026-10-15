@@ -4,14 +4,12 @@ date: 2024-12-17
 author: Relay CMS
 ---
 
-# Welcome to Relay
-
 Relay is a lightweight PHP content management system designed for simplicity and security.
 
 ## Getting Started
 
 - Content is managed through Markdown files in the `/content` directory
-- Menus can be edited through the admin interface at `/admin.php`
+- Menus can be edited through the admin interface at the deployment's `admin.php` endpoint
 - Users are managed via CLI tools: `php admin-tools.php`
 
 ## Features
@@ -24,4 +22,4 @@ Relay is a lightweight PHP content management system designed for simplicity and
 
 ## Administration
 
-Log in to the [admin panel](/admin.php) to manage menus and change your password.
+Log in to the admin panel at `admin.php` to manage menus and change your password.

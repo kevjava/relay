@@ -5,9 +5,10 @@ All notable changes to Relay CMS will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## v0.9.1
 
 ### Added
+
 - **Drag-and-Drop Menu Editor** - Reorder menu items within their existing parent
   - Vendored and pinned SortableJS 1.15.7 under `assets/vendor/sortablejs/`
   - Dedicated drag handles with insertion, chosen-item, and ghost-item feedback
@@ -19,7 +20,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Honors reduced-motion preferences for drag animation
 
 - **Subdirectory Deployment Support** - Deploy to any subdirectory with automatic base path detection
-  - New `lib/url.php` library (122 lines) with URL helper functions
+  - New `lib/url.php` library with URL helper functions
   - `url_get_base_path()` - Auto-detects base path from `$_SERVER['SCRIPT_NAME']`
   - `url_base($path)` - Prefixes URLs with base path for subdirectory deployments
   - `url_strip_base_path($path)` - Removes base path from REQUEST_URI for routing
@@ -72,7 +73,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Access to all helper functions: `menu_render()`, `menu_render_header()`, `url_base()`
 
 - **Documentation**
-  - `CLAUDE.md` - Context file for Claude Code sessions with complete technical details
+  - `AGENTS.md` - Repository guidance for coding agents
   - `CHANGELOG.md` - This file
   - Updated README.md with multi-theme architecture documentation
 
@@ -81,6 +82,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Prevents source code exposure and improves security
 
 ### Removed
+
 - **Legacy Single-Theme Support** - Removed backward compatibility for `theme/` directory
   - Removed `theme/` directory and all legacy theme code
   - Removed `RELAY_THEME_DIR` constant from `lib/theme.php`
@@ -89,8 +91,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Simplified codebase by removing dual-mode support
 
 ### Changed
+
 - **index.php** - Refactored to use theme system
-  - Removed hardcoded HTML output (lines 64-135)
+  - Removed hardcoded HTML output
   - Added theme library inclusion
   - Added template variable preparation
   - Now uses `theme_render_template()` for output
@@ -116,8 +119,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Prevents source code exposure if templates are accessed directly
 
 ### Fixed
+
 - **Menu Editor AJAX Errors** - Fixed JSON parsing failures
-  - Added output buffer management in `admin.php` (lines 75-78)
+  - Added output buffer management in `admin.php`
   - Prevents PHP warnings/notices from corrupting JSON responses
   - Added `ob_start()`, `ob_end_clean()`, and `ob_end_flush()` calls
   - Ensures clean JSON output for AJAX endpoints
@@ -131,7 +135,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **File Permissions** - Fixed Apache read/write access
   - Theme files: Set to `644` (rw-r--r--)
   - Theme directories: Set to `755` (rwxr-xr-x)
-  - Config JSON files: Set to `666` (rw-rw-rw-) for Apache write access
+  - Config and content directories are writable by the web-server user in the Docker image
   - Prevents "Permission denied" errors when saving menus
 
 - **PHP Compatibility** - Updated for PHP 8.1+
@@ -140,6 +144,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Reduced deprecation warnings
 
 ### Security
+
 - **Template Path Validation** - Robust security measures
   - Template names sanitized with regex: `^[a-zA-Z0-9_-]+$`
   - No slashes allowed in template names (prevents path traversal)
@@ -154,6 +159,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Previous] - Before December 18, 2024
 
 ### Existing Features (Not Changed)
+
 - File-based CMS with markdown content
 - YAML frontmatter parsing
 - Menu management system (header, left, right sidebars)
@@ -178,10 +184,12 @@ This changelog was started on December 18, 2024, documenting the theme system im
 These features are under consideration but not yet implemented:
 
 ### Already Implemented ✅
+
 - ✅ Theme configuration file (`theme.json` in each theme)
 - ✅ Multiple theme support with theme switching (backend support complete)
 
 ### Not Yet Implemented
+
 - Template inheritance system (parent/child templates)
 - Template partials/includes for reusable components
 - Theme switching UI in admin interface (backend support exists)

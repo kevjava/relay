@@ -51,6 +51,8 @@ function url_get_base_path(): string {
  * Generate a URL with the base path prefix
  *
  * Converts root-relative URLs to base-path-relative URLs for subdirectory deployment.
+ * External URLs and fragments are returned unchanged; unsupported URI schemes
+ * return an inert fragment.
  * Examples:
  *   - Root deployment: url_base('/assets/css/relay.css') → '/assets/css/relay.css'
  *   - Subdirectory /relay: url_base('/assets/css/relay.css') → '/relay/assets/css/relay.css'
@@ -60,6 +62,20 @@ function url_get_base_path(): string {
  */
 function url_base(string $path): string {
     $base_path = url_get_base_path();
+
+    // Preserve fragments, query strings, and protocol-relative URLs.
+    if ($path !== '' && ($path[0] === '#' || $path[0] === '?' || str_starts_with($path, '//'))) {
+        return $path;
+    }
+
+    // Preserve supported external URLs and reject unsafe or unsupported schemes.
+    if (preg_match('/^[a-z][a-z0-9+.-]*:/i', $path) === 1) {
+        if (preg_match('/^(?:https?|mailto|tel):/i', $path) === 1) {
+            return $path;
+        }
+
+        return '#';
+    }
 
     // If path is empty or just '/', return base path or '/'
     if ($path === '' || $path === '/') {

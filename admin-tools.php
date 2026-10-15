@@ -67,7 +67,8 @@ switch ($command) {
 /**
  * Initialize a fresh Relay installation
  */
-function command_init() {
+function command_init()
+{
     echo "Initializing Relay installation...\n\n";
 
     // Create directories
@@ -156,8 +157,12 @@ MD;
         $menu_file = "config/$menu.json";
         if (!file_exists($menu_file)) {
             $menu_data = ($menu === 'header-menu') ? $default_header_menu : [];
-            file_put_contents($menu_file, json_encode($menu_data, JSON_PRETTY_PRINT));
-            echo "✓ Created menu: $menu_file\n";
+            if (menu_save($menu, $menu_data)) {
+                echo "✓ Created menu: $menu_file\n";
+            } else {
+                echo "✗ Error: Failed to create menu: $menu_file\n";
+                exit(1);
+            }
         } else {
             echo "  File already exists: $menu_file\n";
         }
@@ -207,7 +212,8 @@ MD;
 /**
  * Create a new user
  */
-function command_create_user(array $args) {
+function command_create_user(array $args)
+{
     if (count($args) < 2) {
         echo "Usage: php admin-tools.php create-user <username> <role>\n";
         echo "Roles: admin, editor\n";
@@ -242,7 +248,8 @@ function command_create_user(array $args) {
 /**
  * Reset user password
  */
-function command_reset_password(array $args) {
+function command_reset_password(array $args)
+{
     if (count($args) < 1) {
         echo "Usage: php admin-tools.php reset-password <username>\n";
         exit(1);
@@ -270,7 +277,8 @@ function command_reset_password(array $args) {
 /**
  * List all users
  */
-function command_list_users() {
+function command_list_users()
+{
     $users = auth_load_users();
 
     if (empty($users)) {
@@ -295,7 +303,8 @@ function command_list_users() {
 /**
  * Display help information
  */
-function command_help() {
+function command_help()
+{
     echo "Available commands:\n\n";
 
     echo "  init\n";

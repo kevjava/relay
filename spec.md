@@ -33,6 +33,8 @@ The Docker image:
 - installs Composer
 - installs `libsodium`
 - runs `composer install --no-dev --optimize-autoloader`
+- uses PHP's production `php.ini` (errors are logged, not displayed) with
+  session and `expose_php` hardening in `conf.d/security.ini`
 
 ## Current Directory Structure
 
@@ -71,6 +73,7 @@ The Docker image:
 │   ├── content.php
 │   ├── csrf.php
 │   ├── menu.php
+│   ├── path.php
 │   ├── settings.php
 │   ├── theme.php
 │   └── url.php
@@ -98,6 +101,18 @@ Relay is organized around these core systems:
 3. **JSON-backed menu management**
 4. **Theme-based template rendering**
 5. **Base-path-aware URL generation** for root or subdirectory deployment
+6. **Shared identifier validation and canonical path containment** for security-sensitive filesystem lookups
+
+### Shared Path Safety (`lib/path.php`)
+
+Content and theme filesystem lookups use shared primitives for the security-sensitive operations they have in common:
+
+- `relay_path_is_valid_identifier(string $value): bool` accepts a non-empty identifier containing only ASCII letters, numbers, dashes, and underscores.
+- `relay_path_resolve_within(string $allowed_directory, string $candidate_path): string|false` resolves both paths with `realpath()` and returns the canonical candidate only when the allowed path is an existing directory and the candidate is that directory or a descendant separated by a directory boundary.
+
+Canonical containment rejects missing paths, symlinks that resolve outside the allowed directory, and sibling-prefix collisions such as an `allowed-escape` directory when the allowed root is `allowed`.
+
+The shared functions provide validation and containment primitives only. Content and theme wrappers retain their distinct defaults, normalization rules, nesting policies, lookup precedence, and fallback behavior.
 
 ## Core Libraries
 
@@ -200,6 +215,8 @@ Relay loads Markdown content from `content/`, extracts simple YAML-style frontma
 - empty path resolves to `index`
 - content lookup supports both flat and hierarchical structures
 - direct file path has precedence over nested `index.md`
+- each content path segment delegates identifier validation to `relay_path_is_valid_identifier()`
+- resolved Markdown candidates delegate canonical containment to `relay_path_resolve_within()`
 - frontmatter parser supports simple `key: value` lines
 - Markdown is rendered with `ParsedownExtra`
 - raw HTML in Markdown is currently **allowed**
@@ -254,6 +271,8 @@ Menus are stored as JSON files in `config/` and rendered as nested navigation st
 - menu items may include recursive `children`
 - menu rendering marks active links for exact matches and descendant sections
 - menu URLs are prefixed with `url_base()` during rendering
+- core and theme renderers share prepared labels, URLs, active state, and normalized children through `menu_prepare_render_item()`
+- each renderer retains ownership of its HTML structure, CSS classes, recursion, and final URL escaping
 
 #### Implemented functions
 
@@ -261,6 +280,7 @@ Menus are stored as JSON files in `config/` and rendered as nested navigation st
 - `menu_save(string $menu_name, array $menu_data): bool`
 - `menu_validate(array $menu_data): bool`
 - `menu_is_active(string $url, string $current_path): bool`
+- `menu_prepare_render_item(array $item, string $current_path): array`
 - `menu_render(array $menu_data, string $current_path = '', int $depth = 0): string`
 - `menu_render_header(array $menu_data, string $current_path = ''): string`
 - `menu_list(): array`
@@ -316,9 +336,13 @@ Relay includes a multi-theme system. Themes live under `themes/`, expose metadat
 
 #### Implemented behavior
 
-- active theme is read from `config/settings.json`
-- invalid or missing theme names fall back to `default`
+- configured active theme name is read from `config/settings.json`
+- `theme_get_active()` preserves the configured name
+- effective directory lookup falls back to `default` when the configured identifier is invalid or its directory is missing
+- an existing theme directory remains effective even when full `theme_validate()` structure checks fail; activation still requires full validation
 - template names are sanitized to `[a-zA-Z0-9_-]+`
+- theme and template identifiers delegate common validation to `relay_path_is_valid_identifier()`
+- resolved template files delegate canonical containment to `relay_path_resolve_within()`
 - templates are PHP files with `.php` extension
 - pages can choose a template via content frontmatter:
   - `template: main`
@@ -328,6 +352,7 @@ Relay includes a multi-theme system. Themes live under `themes/`, expose metadat
 
 #### Implemented functions
 
+- `theme_resolve_active(): array`
 - `theme_get_active_dir(): string`
 - `theme_sanitize_template_name(string $template): string|false`
 - `theme_get_template_path(string $template): string|false`
@@ -418,7 +443,7 @@ The admin interface supports login, dashboard actions, menu editing, and theme s
 ### Authentication model
 
 - `action=login` is public
-- all other admin actions require `auth_require_login()`
+- authenticated admin actions require `auth_require_login()`; logout is handled separately and is idempotent
 
 ### Implemented POST actions
 
@@ -569,13 +594,13 @@ Require all denied
 ### Implemented protections
 
 1. **Path traversal prevention**
-   - content paths are sanitized
-   - template names are sanitized
-   - resolved content and template paths are checked against expected base directories
+
+    Content paths and template names retain separate policy wrappers. Common identifiers are restricted to ASCII letters, numbers, dashes, and underscores. Resolved content and template paths must be the canonical base directory or a directory-boundary-separated descendant, rejecting symlink escapes and sibling paths that only share the base directory's string prefix.
 
 2. **CSRF protection**
-   - all state-changing admin forms use CSRF tokens
-   - AJAX menu saves require the same token
+
+    - Authenticated state-changing admin forms use CSRF tokens; public login and idempotent logout are handled separately.
+    - AJAX menu saves require the same token.
 
 3. **Session hardening**
    - session ID regeneration on login
@@ -605,7 +630,9 @@ The repository currently includes:
 - `README.md`
 - `SECURITY.md`
 - `CHANGELOG.md`
-- `CLAUDE.md`
+- `AGENTS.md`
+- developer guides under `content/developer/themes/`
+- bundled theme README files under `themes/`
 
 ## Known Limitations and Non-Goals in Current Code
 
@@ -617,7 +644,7 @@ The repository currently includes:
 - no plugin system
 - no theme marketplace
 - no built-in content versioning
-- no debug-mode error page toggle
+- no application-level debug-mode error toggle
 
 ## Functional Checklist for the Current Implementation
 

@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 require_once __DIR__ . '/Support/FilesystemTestCase.php';
 
+use PHPUnit\Framework\Attributes\PreserveGlobalState;
+use PHPUnit\Framework\Attributes\RunInSeparateProcess;
+
 final class MenuTest extends FilesystemTestCase
 {
     public function testMenuValidateRejectsMalformedStructures(): void
@@ -61,6 +64,68 @@ final class MenuTest extends FilesystemTestCase
         $this->assertStringContainsString('class="active"', $header);
         $this->assertSame('', menu_render([], '/docs'));
         $this->assertSame('', menu_render_header([], '/docs'));
+    }
+
+    #[RunInSeparateProcess]
+    #[PreserveGlobalState(false)]
+    public function testMenuRenderingPreservesExactMarkupForSubdirectoryDeployment(): void
+    {
+        $_SERVER['SCRIPT_NAME'] = '/relay/index.php';
+        $menuData = [
+            ['label' => 'Home', 'url' => '/'],
+            [
+                'label' => 'Docs & <Guides>',
+                'url' => '/docs',
+                'children' => [
+                    ['label' => 'API "Reference"', 'url' => '/docs/api'],
+                ],
+            ],
+        ];
+
+        $this->assertSame(
+            '<ul class="relay-menu relay-menu-depth-0"><li class="relay-menu-item"><a href="/relay/">Home</a></li><li class="relay-menu-item active has-children"><a href="/relay/docs">Docs &amp; &lt;Guides&gt;</a><ul class="relay-menu relay-menu-depth-1"><li class="relay-menu-item active"><a href="/relay/docs/api">API &quot;Reference&quot;</a></li></ul></li></ul>',
+            menu_render($menuData, '/docs/api')
+        );
+        $this->assertSame(
+            '<nav class="relay-header-menu"><ul><li><a href="/relay/">Home</a></li><li class="active"><a href="/relay/docs">Docs &amp; &lt;Guides&gt;</a></li></ul></nav>',
+            menu_render_header($menuData, '/docs/api')
+        );
+    }
+
+    public function testMenuActiveStateHandlesRootTrailingSlashesAndPathBoundaries(): void
+    {
+        $this->assertTrue(menu_is_active('/', '/'));
+        $this->assertFalse(menu_is_active('/', '/docs'));
+        $this->assertTrue(menu_is_active('/docs/', '/docs'));
+        $this->assertTrue(menu_is_active('/docs', '/docs/api'));
+        $this->assertFalse(menu_is_active('/docs', '/docs-old'));
+    }
+
+    public function testPrepareRenderItemReturnsSharedRenderingContext(): void
+    {
+        $children = [['label' => 'API', 'url' => '/docs/api']];
+
+        $this->assertSame(
+            [
+                'label' => 'Docs &amp; &lt;Guides&gt;',
+                'url' => '/docs',
+                'href' => '/docs',
+                'is_active' => true,
+                'children' => $children,
+                'has_children' => true,
+            ],
+            menu_prepare_render_item(
+                ['label' => 'Docs & <Guides>', 'url' => '/docs', 'children' => $children],
+                '/docs/api'
+            )
+        );
+        $this->assertSame(
+            [],
+            menu_prepare_render_item(
+                ['label' => 'Home', 'url' => '/', 'children' => 'invalid'],
+                '/docs'
+            )['children']
+        );
     }
 
     public function testMenuIndentHelpersConvertBetweenFlatAndNestedStructures(): void
