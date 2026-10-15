@@ -9,9 +9,11 @@ services:
     ports:
       - "8080:80"
     volumes:
-      - .:/var/www/html
-      - ./config:/var/www/html/config
-      - ./content:/var/www/html/content
+      # :z relabels the bind mounts for SELinux hosts (Fedora, RHEL) so any
+      # container can read them; it is ignored where SELinux is not enabled
+      - .:/var/www/html:z
+      - ./config:/var/www/html/config:z
+      - ./content:/var/www/html/content:z
     environment:
       - APACHE_DOCUMENT_ROOT=/var/www/html
       - PHP_MEMORY_LIMIT=256M
